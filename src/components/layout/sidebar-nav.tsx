@@ -41,7 +41,7 @@ export function SidebarNav({
   return (
     <aside
       className={cn(
-        "hidden shrink-0 flex-col gap-[22px] overflow-x-hidden overflow-y-auto border-r border-[var(--fl-line)] p-[22px_14px] transition-[width] duration-150 md:flex",
+        "sticky top-5 hidden h-[calc(100vh-40px)] shrink-0 flex-col gap-[22px] overflow-hidden rounded-l-[26px] border-r border-[var(--fl-line)] bg-(--fl-card) p-[22px_14px] transition-[width] duration-150 md:flex",
         collapsed ? "w-[76px]" : "w-[246px]"
       )}
     >

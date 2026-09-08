@@ -39,10 +39,21 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   }
 
   return (
-    <div className="flex h-screen justify-center bg-background p-5">
-      <div className="flex w-full max-w-[1400px] items-stretch overflow-hidden rounded-[26px] bg-(--fl-card) shadow-[0_18px_50px_rgba(15,21,18,0.10)]">
+    <div className="min-h-screen bg-background p-5">
+      {/*
+        No max-width and no nested scroll container by design: the shell
+        fills the real viewport width, and the page scrolls normally (the
+        browser's own scrollbar, not an inner one). Rounded corners are
+        therefore applied separately to the sidebar (rounded-l) and the
+        content column (rounded-r) rather than via overflow:hidden on a
+        shared wrapper — overflow:hidden on an ancestor would break the
+        sidebar's position:sticky (see sidebar-nav.tsx), which is what
+        keeps its bottom promo card pinned to the viewport without an
+        inner scroll region.
+      */}
+      <div className="flex w-full items-start rounded-[26px] shadow-[0_18px_50px_rgba(15,21,18,0.10)]">
         <SidebarNav debtFreeLabel={debtFreeLabel} debtFreeSub={debtFreeSub} />
-        <div className="flex min-w-0 flex-1 flex-col">
+        <div className="min-w-0 flex-1 overflow-hidden rounded-[26px] bg-(--fl-card) md:rounded-l-none">
           <Topbar
             userName={user.name}
             userEmail={user.email}
@@ -50,7 +61,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             locale={preference.locale}
             hasSampleData={sampleDataExists}
           />
-          <main className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto bg-(--fl-content-bg) pb-24 md:pb-0">
+          <main className="bg-(--fl-content-bg) pb-24 md:pb-0">
             <div className="flex flex-col gap-4 p-[22px_18px_28px] md:p-[22px_24px_28px]">{children}</div>
           </main>
         </div>
