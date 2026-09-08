@@ -11,7 +11,7 @@ import {
   type BudgetAllocationInput,
 } from "@/lib/validations/budget";
 import { toMinorUnits } from "@/lib/money";
-import { monthlyEquivalentMinor } from "@/lib/finance/sip";
+import { monthlyEquivalentMinorForMonth } from "@/lib/finance/sip";
 import {
   categoryBudgetStatus,
   spendingPace,
@@ -106,7 +106,13 @@ export async function createBudgetMonth(input: CreateBudgetMonthInput): Promise<
         const categoryName = INVESTMENT_TYPE_TO_CATEGORY[inv.investmentType] ?? "Other Savings";
         const category = categoryByName.get(categoryName);
         if (!category) continue;
-        const monthly = monthlyEquivalentMinor(inv.contributionAmountMinor, inv.frequency);
+        const monthly = monthlyEquivalentMinorForMonth(
+          inv.contributionAmountMinor,
+          inv.frequency,
+          inv.nextContributionDate,
+          data.year,
+          data.month - 1
+        );
         totals.set(category.id, (totals.get(category.id) ?? 0) + monthly);
       }
       for (const [categoryId, amount] of totals) {
@@ -121,7 +127,7 @@ export async function createBudgetMonth(input: CreateBudgetMonthInput): Promise<
       const totals = new Map<string, number>();
       for (const r of recurring) {
         if (!r.categoryId) continue;
-        const monthly = monthlyEquivalentMinor(r.amountMinor, r.frequency);
+        const monthly = monthlyEquivalentMinorForMonth(r.amountMinor, r.frequency, r.nextOccurrenceDate, data.year, data.month - 1);
         totals.set(r.categoryId, (totals.get(r.categoryId) ?? 0) + monthly);
       }
       for (const [categoryId, amount] of totals) {

@@ -3,7 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { requireUserId } from "@/lib/session";
 import { currentYearMonth, daysInMonth, formatDateOnly } from "@/lib/dates";
-import { monthlyEquivalentMinor } from "@/lib/finance/sip";
+import { monthlyEquivalentMinorForMonth } from "@/lib/finance/sip";
 import { getBudgetVsActual } from "@/lib/actions/budget";
 import { recommendedTargetMinor, progressPercent } from "@/lib/finance/emergencyFund";
 import { simulateMinimumPaymentsBaseline, type PayoffLoanInput } from "@/lib/finance/payoff";
@@ -99,12 +99,15 @@ export async function getDashboardSummary(target?: { year: number; month: number
   const latestScenario = await prisma.payoffScenario.findFirst({ where: { userId }, orderBy: { createdAt: "desc" } });
   const scenarioSummary = latestScenario?.resultsSummaryJson ? JSON.parse(latestScenario.resultsSummaryJson) : null;
 
+  // Exact for the selected month rather than a flat annual average — a
+  // weekly SIP due every Monday counts the real number of Mondays in this
+  // specific month (4 or 5), not 52/12.
   const activeSipMonthlyMinor = activeInvestments.reduce(
-    (s, i) => s + monthlyEquivalentMinor(i.contributionAmountMinor, i.frequency),
+    (s, i) => s + monthlyEquivalentMinorForMonth(i.contributionAmountMinor, i.frequency, i.nextContributionDate, year, month - 1),
     0
   );
   const pausedSipMonthlyMinor = pausedInvestments.reduce(
-    (s, i) => s + monthlyEquivalentMinor(i.contributionAmountMinor, i.frequency),
+    (s, i) => s + monthlyEquivalentMinorForMonth(i.contributionAmountMinor, i.frequency, i.nextContributionDate, year, month - 1),
     0
   );
   const activeInvestmentsCount = activeInvestments.length;

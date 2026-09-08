@@ -47,6 +47,20 @@ export function daysInMonth(year: number, monthIndex0: number): number {
   return new Date(Date.UTC(year, monthIndex0 + 1, 0)).getUTCDate();
 }
 
+/**
+ * How many times a given weekday (0=Sunday..6=Saturday) falls within a
+ * specific calendar month — 4 or 5, never a flat average. Used to convert a
+ * weekly recurring amount into "how much is actually due this month"
+ * instead of a smoothed 52/12 estimate, which over- or under-states most
+ * individual months even though it averages out correctly over a year.
+ */
+export function countWeekdayOccurrencesInMonth(year: number, monthIndex0: number, weekday: number): number {
+  const total = daysInMonth(year, monthIndex0);
+  const firstWeekday = utcDateOnly(year, monthIndex0, 1).getUTCDay();
+  const offset = (weekday - firstWeekday + 7) % 7;
+  return offset >= total ? 0 : Math.floor((total - 1 - offset) / 7) + 1;
+}
+
 export function isLeapYear(year: number): boolean {
   return (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
 }

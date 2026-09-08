@@ -1,4 +1,5 @@
 import { roundHalfAwayFromZero } from "@/lib/money";
+import { countWeekdayOccurrencesInMonth, daysInMonth } from "@/lib/dates";
 import type { Frequency } from "@prisma/client";
 
 /**
@@ -7,6 +8,12 @@ import type { Frequency } from "@prisma/client";
  * SIPs/investments/recurring bills of different cadences on one monthly
  * budget line, and to compute how much cash is released when one is
  * paused.
+ *
+ * This is a smoothed annual average (52 weeks/12 months = 4.33), correct
+ * over a year but not what any single calendar month actually adds up to —
+ * a weekly contribution lands 4 or 5 times in a given month, never 4.33
+ * times. Use monthlyEquivalentMinorForMonth instead when the figure is
+ * presented as "this month's" commitment rather than a general rate.
  */
 export function monthlyEquivalentMinor(amountMinor: number, frequency: Frequency): number {
   switch (frequency) {
@@ -24,6 +31,32 @@ export function monthlyEquivalentMinor(amountMinor: number, frequency: Frequency
       return amountMinor;
     default:
       return amountMinor;
+  }
+}
+
+/**
+ * Same conversion, but exact for a specific calendar month instead of a
+ * flat annual average: a weekly contribution counts the real number of
+ * times its recurring weekday (taken from anchorDate, e.g. the investment's
+ * next contribution date) falls within that month, and a daily one counts
+ * that month's actual day count. Monthly/quarterly/yearly/custom cadences
+ * don't reliably land in every month without knowing the full cycle from
+ * the anchor date, so they fall back to the same average as above.
+ */
+export function monthlyEquivalentMinorForMonth(
+  amountMinor: number,
+  frequency: Frequency,
+  anchorDate: Date,
+  year: number,
+  monthIndex0: number
+): number {
+  switch (frequency) {
+    case "DAILY":
+      return amountMinor * daysInMonth(year, monthIndex0);
+    case "WEEKLY":
+      return amountMinor * countWeekdayOccurrencesInMonth(year, monthIndex0, anchorDate.getUTCDay());
+    default:
+      return monthlyEquivalentMinor(amountMinor, frequency);
   }
 }
 
