@@ -1,0 +1,901 @@
+// Personal Finance Management module — Prisma schema
+//
+// Conventions:
+// - All money fields are integer MINOR UNITS (e.g. paise for INR) to avoid
+//   floating point rounding errors. Never store money as Float.
+// - All DateTime fields are stored in UTC; the UI converts to the user's
+//   timezone (see UserFinancialPreference.timezone) for display.
+// - Every user-owned row carries a direct `userId` column (denormalized)
+//   so server-side ownership checks never require a join.
+// - Soft-delete via `isArchived` / `status` fields is preferred over hard
+//   deletes for anything with financial history.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Auth / User
+// ---------------------------------------------------------------------------
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  preference UserFinancialPreference?
+
+  accounts                  FinancialAccount[]
+  incomeTransactions        IncomeTransaction[]
+  expenseTransactions       ExpenseTransaction[]
+  accountTransfers          AccountTransfer[]
+  budgetCategories          BudgetCategory[]
+  budgetTemplates           BudgetTemplate[]
+  budgetMonths              BudgetMonth[]
+  recurringTransactions     RecurringTransaction[]
+  loans                     Loan[]
+  loanPayments              LoanPayment[]
+  investments               Investment[]
+  investmentContributions   InvestmentContribution[]
+  emergencyFunds            EmergencyFund[]
+  emergencyFundTransactions EmergencyFundTransaction[]
+  payoffScenarios           PayoffScenario[]
+  cashAllocationRules       CashAllocationRule[]
+  receiptAttachments        ReceiptAttachment[]
+  transactionTags           TransactionTag[]
+  paymentMethods            PaymentMethod[]
+  alertPreferences          AlertPreference[]
+  alertInstances            AlertInstance[]
+
+  @@index([email])
+}
+
+model UserFinancialPreference {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  currency                    String          @default("INR")
+  locale                      String          @default("en-IN")
+  timezone                    String          @default("Asia/Kolkata")
+  defaultBudgetingMethod      BudgetingMethod @default(ZERO_BASED)
+  needsPercent                Float           @default(50)
+  wantsPercent                Float           @default(30)
+  savingsDebtPercent          Float           @default(20)
+  safeCashBufferMinor         Int             @default(0)
+  creditUtilizationWarningPct Float           @default(30)
+  emiBurdenWarningPct         Float           @default(40)
+  sampleDataEnabled           Boolean         @default(false)
+  weekStartsOn                Int             @default(1) // 0=Sunday
+  createdAt                   DateTime        @default(now())
+  updatedAt                   DateTime        @updatedAt
+}
+
+// ---------------------------------------------------------------------------
+// Accounts
+// ---------------------------------------------------------------------------
+
+model FinancialAccount {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name                String
+  type                AccountType
+  institution         String?
+  openingBalanceMinor Int         @default(0)
+  currentBalanceMinor Int         @default(0)
+  currency            String      @default("INR")
+  creditLimitMinor    Int?
+  statementDay        Int?
+  billingDay          Int?
+  paymentDueDay       Int?
+  isArchived          Boolean     @default(false)
+  isSampleData        Boolean     @default(false)
+  notes               String?
+  createdAt           DateTime    @default(now())
+  updatedAt           DateTime    @updatedAt
+
+  incomeTransactions        IncomeTransaction[]
+  expenseTransactions       ExpenseTransaction[]
+  transfersFrom             AccountTransfer[]          @relation("TransferFromAccount")
+  transfersTo               AccountTransfer[]          @relation("TransferToAccount")
+  loanPayments              LoanPayment[]
+  investmentContributions   InvestmentContribution[]
+  emergencyFunds            EmergencyFund[]
+  emergencyFundTransactions EmergencyFundTransaction[]
+  recurringTransactions     RecurringTransaction[]
+
+  @@index([userId])
+  @@index([userId, isArchived])
+}
+
+model AccountTransfer {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  fromAccountId String
+  fromAccount   FinancialAccount @relation("TransferFromAccount", fields: [fromAccountId], references: [id])
+  toAccountId   String
+  toAccount     FinancialAccount @relation("TransferToAccount", fields: [toAccountId], references: [id])
+
+  amountMinor Int
+  feeMinor    Int      @default(0)
+  date        DateTime
+  notes       String?
+  createdAt   DateTime @default(now())
+
+  @@index([userId])
+  @@index([fromAccountId])
+  @@index([toAccountId])
+}
+
+// ---------------------------------------------------------------------------
+// Categories, tags, payment methods
+// ---------------------------------------------------------------------------
+
+model BudgetCategory {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name             String
+  group            CategoryGroup
+  color            String           @default("#6366f1")
+  icon             String?
+  sortOrder        Int              @default(0)
+  isArchived       Boolean          @default(false)
+  isCustom         Boolean          @default(true)
+  parentCategoryId String?
+  parentCategory   BudgetCategory?  @relation("CategoryHierarchy", fields: [parentCategoryId], references: [id])
+  subcategories    BudgetCategory[] @relation("CategoryHierarchy")
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  expenseTransactions   ExpenseTransaction[]
+  expenseSplits         ExpenseSplit[]
+  budgetAllocations     BudgetAllocation[]
+  templateAllocations   BudgetTemplateAllocation[]
+  recurringTransactions RecurringTransaction[]
+
+  @@unique([userId, name, parentCategoryId])
+  @@index([userId])
+  @@index([userId, group])
+}
+
+model PaymentMethod {
+  id         String  @id @default(cuid())
+  userId     String
+  user       User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name       String
+  isCustom   Boolean @default(true)
+  isArchived Boolean @default(false)
+  sortOrder  Int     @default(0)
+
+  expenseTransactions ExpenseTransaction[]
+
+  @@unique([userId, name])
+  @@index([userId])
+}
+
+model TransactionTag {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  color     String?
+  createdAt DateTime @default(now())
+
+  assignments TransactionTagAssignment[]
+
+  @@unique([userId, name])
+  @@index([userId])
+}
+
+model TransactionTagAssignment {
+  id                   String             @id @default(cuid())
+  tagId                String
+  tag                  TransactionTag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  expenseTransactionId String
+  expenseTransaction   ExpenseTransaction @relation(fields: [expenseTransactionId], references: [id], onDelete: Cascade)
+
+  @@unique([tagId, expenseTransactionId])
+  @@index([expenseTransactionId])
+}
+
+// ---------------------------------------------------------------------------
+// Income
+// ---------------------------------------------------------------------------
+
+model IncomeTransaction {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  sourceName             String
+  category               IncomeCategory
+  plannedAmountMinor     Int
+  actualAmountMinor      Int?
+  expectedDate           DateTime
+  receivedDate           DateTime?
+  accountId              String?
+  account                FinancialAccount?     @relation(fields: [accountId], references: [id])
+  isRecurring            Boolean               @default(false)
+  recurringTransactionId String?
+  recurringTransaction   RecurringTransaction? @relation(fields: [recurringTransactionId], references: [id])
+  notes                  String?
+  status                 IncomeStatus          @default(EXPECTED)
+  isArchived             Boolean               @default(false)
+  isSampleData           Boolean               @default(false)
+  createdAt              DateTime              @default(now())
+  updatedAt              DateTime              @updatedAt
+
+  @@index([userId])
+  @@index([userId, expectedDate])
+  @@index([userId, status])
+  @@index([accountId])
+}
+
+// ---------------------------------------------------------------------------
+// Expenses
+// ---------------------------------------------------------------------------
+
+model ExpenseTransaction {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  date                   DateTime
+  amountMinor            Int
+  name                   String
+  description            String?
+  categoryId             String?
+  category               BudgetCategory?       @relation(fields: [categoryId], references: [id])
+  accountId              String
+  account                FinancialAccount      @relation(fields: [accountId], references: [id])
+  paymentMethodId        String?
+  paymentMethod          PaymentMethod?        @relation(fields: [paymentMethodId], references: [id])
+  merchant               String?
+  isRecurring            Boolean               @default(false)
+  recurringTransactionId String?
+  recurringTransaction   RecurringTransaction? @relation(fields: [recurringTransactionId], references: [id])
+  essentialType          EssentialType         @default(DISCRETIONARY)
+  linkedLoanId           String?
+  linkedLoan             Loan?                 @relation(fields: [linkedLoanId], references: [id])
+  linkedInvestmentId     String?
+  linkedInvestment       Investment?           @relation(fields: [linkedInvestmentId], references: [id])
+  reimbursable           Boolean               @default(false)
+  reimbursedAmountMinor  Int?
+  refundOfExpenseId      String?
+  refundOfExpense        ExpenseTransaction?   @relation("RefundOf", fields: [refundOfExpenseId], references: [id])
+  refunds                ExpenseTransaction[]  @relation("RefundOf")
+  status                 ExpenseStatus         @default(PAID)
+  isSampleData           Boolean               @default(false)
+  notes                  String?
+  createdAt              DateTime              @default(now())
+  updatedAt              DateTime              @updatedAt
+
+  splits                   ExpenseSplit[]
+  tags                     TransactionTagAssignment[]
+  receipts                 ReceiptAttachment[]
+  emergencyFundWithdrawals EmergencyFundTransaction[]
+
+  @@index([userId])
+  @@index([userId, date])
+  @@index([userId, categoryId])
+  @@index([userId, status])
+  @@index([accountId])
+}
+
+model ExpenseSplit {
+  id                   String             @id @default(cuid())
+  expenseTransactionId String
+  expenseTransaction   ExpenseTransaction @relation(fields: [expenseTransactionId], references: [id], onDelete: Cascade)
+  categoryId           String
+  category             BudgetCategory     @relation(fields: [categoryId], references: [id])
+  amountMinor          Int
+  notes                String?
+
+  @@index([expenseTransactionId])
+  @@index([categoryId])
+}
+
+model ReceiptAttachment {
+  id                   String              @id @default(cuid())
+  userId               String
+  user                 User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expenseTransactionId String?
+  expenseTransaction   ExpenseTransaction? @relation(fields: [expenseTransactionId], references: [id], onDelete: Cascade)
+  fileName             String
+  url                  String
+  mimeType             String
+  sizeBytes            Int
+  createdAt            DateTime            @default(now())
+
+  @@index([userId])
+  @@index([expenseTransactionId])
+}
+
+// ---------------------------------------------------------------------------
+// Recurring transactions
+// ---------------------------------------------------------------------------
+
+model RecurringTransaction {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  type                TransactionType
+  name                String
+  amountMinor         Int
+  categoryId          String?
+  category            BudgetCategory?   @relation(fields: [categoryId], references: [id])
+  accountId           String?
+  account             FinancialAccount? @relation(fields: [accountId], references: [id])
+  frequency           Frequency
+  customIntervalDays  Int?
+  startDate           DateTime
+  endDate             DateTime?
+  nextOccurrenceDate  DateTime
+  autoGenerate        Boolean           @default(false)
+  requireConfirmation Boolean           @default(true)
+  isActive            Boolean           @default(true)
+  notes               String?
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+
+  incomeTransactions  IncomeTransaction[]
+  expenseTransactions ExpenseTransaction[]
+
+  @@index([userId])
+  @@index([userId, isActive])
+  @@index([userId, nextOccurrenceDate])
+}
+
+// ---------------------------------------------------------------------------
+// Budgets
+// ---------------------------------------------------------------------------
+
+model BudgetTemplate {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  allocations BudgetTemplateAllocation[]
+
+  @@index([userId])
+}
+
+model BudgetTemplateAllocation {
+  id                 String         @id @default(cuid())
+  templateId         String
+  template           BudgetTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  categoryId         String
+  category           BudgetCategory @relation(fields: [categoryId], references: [id])
+  plannedAmountMinor Int
+  notes              String?
+
+  @@unique([templateId, categoryId])
+}
+
+model BudgetMonth {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  month              Int // 1-12
+  year               Int
+  budgetingMethod    BudgetingMethod @default(ZERO_BASED)
+  needsPercent       Float?
+  wantsPercent       Float?
+  savingsDebtPercent Float?
+  plannedIncomeMinor Int             @default(0)
+  isLocked           Boolean         @default(false)
+  isSampleData       Boolean         @default(false)
+  notes              String?
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+
+  allocations BudgetAllocation[]
+
+  @@unique([userId, year, month])
+  @@index([userId])
+}
+
+model BudgetAllocation {
+  id                 String         @id @default(cuid())
+  budgetMonthId      String
+  budgetMonth        BudgetMonth    @relation(fields: [budgetMonthId], references: [id], onDelete: Cascade)
+  categoryId         String
+  category           BudgetCategory @relation(fields: [categoryId], references: [id])
+  plannedAmountMinor Int
+  notes              String?
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+
+  @@unique([budgetMonthId, categoryId])
+  @@index([categoryId])
+}
+
+// ---------------------------------------------------------------------------
+// Loans / debt
+// ---------------------------------------------------------------------------
+
+model Loan {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name                             String
+  lender                           String
+  loanType                         LoanType
+  originalPrincipalMinor           Int
+  currentOutstandingPrincipalMinor Int
+  annualInterestRatePercent        Float
+  rateType                         RateType   @default(FIXED)
+  currentEmiMinor                  Int
+  originalTenureMonths             Int
+  remainingTenureMonths            Int
+  startDate                        DateTime
+  nextPaymentDate                  DateTime
+  emiPaymentDay                    Int?
+  lenderClosureDate                DateTime?
+  prepaymentChargePercent          Float?
+  foreclosureChargePercent         Float?
+  notes                            String?
+  status                           LoanStatus @default(ACTIVE)
+  isSampleData                     Boolean    @default(false)
+  createdAt                        DateTime   @default(now())
+  updatedAt                        DateTime   @updatedAt
+
+  payments            LoanPayment[]
+  expenseTransactions ExpenseTransaction[]
+  scenarioLoans       PayoffScenarioLoan[]
+  scheduleEntries     PayoffScheduleEntry[]
+  cashAllocationRules CashAllocationRule[]
+
+  @@index([userId])
+  @@index([userId, status])
+}
+
+model LoanPayment {
+  id     String @id @default(cuid())
+  loanId String
+  loan   Loan   @relation(fields: [loanId], references: [id], onDelete: Cascade)
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  paymentDate                  DateTime
+  totalAmountMinor             Int
+  principalMinor               Int
+  interestMinor                Int
+  feeMinor                     Int               @default(0)
+  extraAmountMinor             Int               @default(0)
+  outstandingBalanceAfterMinor Int?
+  accountId                    String?
+  account                      FinancialAccount? @relation(fields: [accountId], references: [id])
+  notes                        String?
+  createdAt                    DateTime          @default(now())
+
+  @@index([loanId])
+  @@index([userId])
+  @@index([loanId, paymentDate])
+}
+
+// ---------------------------------------------------------------------------
+// Investments / SIP
+// ---------------------------------------------------------------------------
+
+model Investment {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name                      String
+  provider                  String?
+  investmentType            InvestmentType
+  category                  String?
+  frequency                 Frequency
+  contributionAmountMinor   Int
+  startDate                 DateTime
+  nextContributionDate      DateTime
+  currentInvestedValueMinor Int?
+  currentMarketValueMinor   Int?
+  isTaxLinked               Boolean        @default(false)
+  lockInEndDate             DateTime?
+  autoDebit                 Boolean        @default(true)
+  isActive                  Boolean        @default(true)
+  pauseDate                 DateTime?
+  plannedResumeDate         DateTime?
+  isSampleData              Boolean        @default(false)
+  notes                     String?
+  createdAt                 DateTime       @default(now())
+  updatedAt                 DateTime       @updatedAt
+
+  contributions       InvestmentContribution[]
+  statusHistory       InvestmentStatusHistory[]
+  expenseTransactions ExpenseTransaction[]
+  cashAllocationRules CashAllocationRule[]
+
+  @@index([userId])
+  @@index([userId, isActive])
+}
+
+model InvestmentContribution {
+  id           String     @id @default(cuid())
+  investmentId String
+  investment   Investment @relation(fields: [investmentId], references: [id], onDelete: Cascade)
+  userId       String
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  date        DateTime
+  amountMinor Int
+  accountId   String?
+  account     FinancialAccount? @relation(fields: [accountId], references: [id])
+  notes       String?
+  createdAt   DateTime          @default(now())
+
+  @@index([investmentId])
+  @@index([userId])
+}
+
+model InvestmentStatusHistory {
+  id           String     @id @default(cuid())
+  investmentId String
+  investment   Investment @relation(fields: [investmentId], references: [id], onDelete: Cascade)
+
+  status                         InvestmentLifecycleStatus
+  date                           DateTime
+  reason                         String?
+  releasedMonthlyEquivalentMinor Int?
+  allocationChoice               CashAllocationTarget?
+  notes                          String?
+  createdAt                      DateTime                  @default(now())
+
+  @@index([investmentId])
+}
+
+// ---------------------------------------------------------------------------
+// Emergency fund
+// ---------------------------------------------------------------------------
+
+model EmergencyFund {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name                            String
+  currentSavedAmountMinor         Int                   @default(0)
+  currentMonthlyContributionMinor Int                   @default(0)
+  targetMethod                    EmergencyTargetMethod @default(SIX_MONTHS)
+  fixedTargetAmountMinor          Int?
+  targetMonths                    Int?
+  targetDate                      DateTime?
+  accountId                       String?
+  account                         FinancialAccount?     @relation(fields: [accountId], references: [id])
+  isSampleData                    Boolean               @default(false)
+  notes                           String?
+  createdAt                       DateTime              @default(now())
+  updatedAt                       DateTime              @updatedAt
+
+  transactions EmergencyFundTransaction[]
+
+  @@index([userId])
+}
+
+model EmergencyFundTransaction {
+  id              String        @id @default(cuid())
+  emergencyFundId String
+  emergencyFund   EmergencyFund @relation(fields: [emergencyFundId], references: [id], onDelete: Cascade)
+  userId          String
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  type            EmergencyTxnType
+  date            DateTime
+  amountMinor     Int
+  reason          String?
+  linkedExpenseId String?
+  linkedExpense   ExpenseTransaction? @relation(fields: [linkedExpenseId], references: [id])
+  accountId       String?
+  account         FinancialAccount?   @relation(fields: [accountId], references: [id])
+  notes           String?
+  createdAt       DateTime            @default(now())
+
+  @@index([emergencyFundId])
+  @@index([userId])
+}
+
+// ---------------------------------------------------------------------------
+// Debt payoff scenarios (avalanche / snowball simulator)
+// ---------------------------------------------------------------------------
+
+model PayoffScenario {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name                    String
+  strategy                PayoffStrategy
+  extraMonthlyAmountMinor Int            @default(0)
+  includeReleasedSipMinor Int            @default(0)
+  lumpSumAmountMinor      Int?
+  lumpSumMonthIndex       Int?
+  annualIncreasePercent   Float?
+  planStartMonth          DateTime
+  minCashBufferMinor      Int            @default(0)
+  resultsSummaryJson      String? // cached computed summary; recomputable at any time
+  createdAt               DateTime       @default(now())
+  updatedAt               DateTime       @updatedAt
+
+  scenarioLoans   PayoffScenarioLoan[]
+  scheduleEntries PayoffScheduleEntry[]
+
+  @@index([userId])
+}
+
+model PayoffScenarioLoan {
+  id                 String         @id @default(cuid())
+  scenarioId         String
+  scenario           PayoffScenario @relation(fields: [scenarioId], references: [id], onDelete: Cascade)
+  loanId             String
+  loan               Loan           @relation(fields: [loanId], references: [id])
+  priorityOrder      Int            @default(0)
+  includedInScenario Boolean        @default(true)
+
+  @@unique([scenarioId, loanId])
+}
+
+model PayoffScheduleEntry {
+  id         String         @id @default(cuid())
+  scenarioId String
+  scenario   PayoffScenario @relation(fields: [scenarioId], references: [id], onDelete: Cascade)
+  loanId     String
+  loan       Loan           @relation(fields: [loanId], references: [id])
+
+  monthIndex          Int
+  date                DateTime
+  openingBalanceMinor Int
+  interestMinor       Int
+  principalMinor      Int
+  extraPaymentMinor   Int      @default(0)
+  closingBalanceMinor Int
+  isClosed            Boolean  @default(false)
+
+  @@index([scenarioId])
+  @@index([scenarioId, loanId])
+  @@index([scenarioId, monthIndex])
+}
+
+// ---------------------------------------------------------------------------
+// Post-debt / post-pause cash allocation rules
+// ---------------------------------------------------------------------------
+
+model CashAllocationRule {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  triggerType      CashAllocationTrigger
+  loanId           String?
+  loan             Loan?                 @relation(fields: [loanId], references: [id])
+  investmentId     String?
+  investment       Investment?           @relation(fields: [investmentId], references: [id])
+  targetType       CashAllocationTarget
+  targetId         String?
+  percentAllocated Float?
+  amountMinor      Int?
+  effectiveDate    DateTime
+  notes            String?
+  createdAt        DateTime              @default(now())
+
+  @@index([userId])
+}
+
+// ---------------------------------------------------------------------------
+// Alerts
+// ---------------------------------------------------------------------------
+
+model AlertPreference {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  alertType      String
+  isEnabled      Boolean   @default(true)
+  thresholdValue Float?
+  snoozedUntil   DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@unique([userId, alertType])
+  @@index([userId])
+}
+
+model AlertInstance {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  alertType         String
+  severity          AlertSeverity @default(INFO)
+  title             String
+  message           String
+  relatedEntityType String?
+  relatedEntityId   String?
+  isDismissed       Boolean       @default(false)
+  isRead            Boolean       @default(false)
+  createdAt         DateTime      @default(now())
+
+  @@index([userId])
+  @@index([userId, isDismissed])
+}
+
+// ---------------------------------------------------------------------------
+// Enums
+// ---------------------------------------------------------------------------
+
+enum AccountType {
+  BANK
+  CASH
+  CREDIT_CARD
+  WALLET
+  INVESTMENT
+  LOAN
+  OTHER
+}
+
+enum IncomeCategory {
+  SALARY
+  FREELANCE
+  BUSINESS
+  RENTAL
+  INTEREST
+  DIVIDENDS
+  BONUS
+  REIMBURSEMENT
+  OTHER
+}
+
+enum IncomeStatus {
+  EXPECTED
+  RECEIVED
+  PARTIALLY_RECEIVED
+  DELAYED
+  CANCELLED
+}
+
+enum ExpenseStatus {
+  PAID
+  PENDING
+  REFUNDED
+  CANCELLED
+}
+
+enum EssentialType {
+  ESSENTIAL
+  DISCRETIONARY
+}
+
+enum CategoryGroup {
+  ESSENTIAL
+  DEBT
+  INVESTMENT
+  LIFESTYLE
+  INCOME
+  OTHER
+}
+
+enum BudgetingMethod {
+  ZERO_BASED
+  PERCENTAGE
+  CUSTOM
+}
+
+enum Frequency {
+  DAILY
+  WEEKLY
+  MONTHLY
+  QUARTERLY
+  YEARLY
+  CUSTOM
+}
+
+enum TransactionType {
+  INCOME
+  EXPENSE
+}
+
+enum LoanType {
+  PERSONAL
+  CREDIT_CARD
+  VEHICLE
+  HOME
+  GOLD
+  CONSUMER
+  EDUCATION
+  BUSINESS
+  OTHER
+}
+
+enum RateType {
+  FIXED
+  FLOATING
+}
+
+enum LoanStatus {
+  ACTIVE
+  PAID_OFF
+  ARCHIVED
+}
+
+enum InvestmentType {
+  MUTUAL_FUND
+  ELSS
+  GOLD
+  SILVER
+  STOCKS
+  NPS
+  PPF
+  RECURRING_DEPOSIT
+  FIXED_DEPOSIT
+  OTHER
+}
+
+enum InvestmentLifecycleStatus {
+  ACTIVE
+  PAUSED
+  RESUMED
+  CLOSED
+}
+
+enum EmergencyTargetMethod {
+  FIXED_AMOUNT
+  THREE_MONTHS
+  SIX_MONTHS
+  CUSTOM_MONTHS
+}
+
+enum EmergencyTxnType {
+  DEPOSIT
+  WITHDRAWAL
+}
+
+enum PayoffStrategy {
+  AVALANCHE
+  SNOWBALL
+  SHORTEST_TENURE
+  CUSTOM
+}
+
+enum CashAllocationTarget {
+  NEXT_DEBT
+  EMERGENCY_FUND
+  SIP_RESUME
+  NEW_INVESTMENT
+  CASH_BUFFER
+  UNALLOCATED
+}
+
+enum CashAllocationTrigger {
+  SIP_PAUSE
+  LOAN_CLOSURE
+}
+
+enum AlertSeverity {
+  INFO
+  WARNING
+  CRITICAL
+}

@@ -33,9 +33,18 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env*
 
+# local SQLite database (contains real financial data once the app is used)
+prisma/*.db
+prisma/*.db-journal
+
+# local Claude Code session state
+.claude/
+
 # vercel
 .vercel
 
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+/src/generated/prisma

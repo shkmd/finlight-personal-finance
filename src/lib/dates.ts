@@ -1,0 +1,111 @@
+import {
+  addDays,
+  addMonths,
+  addQuarters,
+  addWeeks,
+  addYears,
+  differenceInCalendarMonths,
+  format,
+  isBefore,
+  isEqual,
+  startOfMonth,
+} from "date-fns";
+import type { Frequency } from "@prisma/client";
+
+/**
+ * Date convention for this app:
+ *
+ * Financial dates (transaction date, EMI due date, SIP date, budget month)
+ * are calendar-day concepts, not moments in time — "the 5th of March" means
+ * the same thing regardless of timezone. We store these as UTC midnight
+ * (`new Date(Date.UTC(y, m, d))`) and always read/format them using the
+ * UTC getters below, so the calendar day never shifts under a viewer's
+ * local timezone. Audit timestamps (`createdAt`/`updatedAt`) are true UTC
+ * instants and are formatted using the browser's local timezone instead,
+ * since "when was this row written" *is* a moment in time.
+ */
+
+export function utcDateOnly(year: number, monthIndex0: number, day: number): Date {
+  return new Date(Date.UTC(year, monthIndex0, day));
+}
+
+export function toUtcDateOnly(date: Date): Date {
+  return utcDateOnly(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
+}
+
+export function formatDateOnly(date: Date, pattern = "d MMM yyyy"): string {
+  // Format using UTC components so the displayed calendar day is stable.
+  const shifted = new Date(
+    date.getUTCFullYear(),
+    date.getUTCMonth(),
+    date.getUTCDate()
+  );
+  return format(shifted, pattern);
+}
+
+export function daysInMonth(year: number, monthIndex0: number): number {
+  return new Date(Date.UTC(year, monthIndex0 + 1, 0)).getUTCDate();
+}
+
+export function isLeapYear(year: number): boolean {
+  return (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
+}
+
+export function currentYearMonth(): { year: number; month: number } {
+  const now = new Date();
+  return { year: now.getUTCFullYear(), month: now.getUTCMonth() + 1 };
+}
+
+export function monthKey(year: number, month: number): string {
+  return `${year}-${String(month).padStart(2, "0")}`;
+}
+
+/** Advance a UTC-date-only value by one occurrence of the given frequency. */
+export function addFrequency(
+  date: Date,
+  frequency: Frequency,
+  customIntervalDays?: number | null
+): Date {
+  switch (frequency) {
+    case "DAILY":
+      return addDays(date, 1);
+    case "WEEKLY":
+      return addWeeks(date, 1);
+    case "MONTHLY":
+      return clampToMonthLength(addMonths(date, 1));
+    case "QUARTERLY":
+      return clampToMonthLength(addQuarters(date, 1));
+    case "YEARLY":
+      return addYears(date, 1);
+    case "CUSTOM":
+      return addDays(date, Math.max(1, customIntervalDays ?? 30));
+    default:
+      return addMonths(date, 1);
+  }
+}
+
+/**
+ * date-fns' addMonths clamps overflow days itself (e.g. Jan 31 + 1 month =
+ * Feb 28), which is exactly the "month-length differences" edge case the
+ * spec calls out. This helper exists to make that clamping explicit and
+ * testable rather than incidental.
+ */
+function clampToMonthLength(candidate: Date): Date {
+  return toUtcDateOnly(candidate);
+}
+
+export function monthsBetween(from: Date, to: Date): number {
+  return differenceInCalendarMonths(to, from);
+}
+
+export function isOnOrBefore(a: Date, b: Date): boolean {
+  return isBefore(a, b) || isEqual(a, b);
+}
+
+export function addMonthsUtc(date: Date, months: number): Date {
+  return toUtcDateOnly(addMonths(date, months));
+}
+
+export function startOfMonthUtc(date: Date): Date {
+  return toUtcDateOnly(startOfMonth(date));
+}
