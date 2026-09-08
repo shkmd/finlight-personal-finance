@@ -76,6 +76,29 @@ export function LoanFormDialog({ loan, trigger }: { loan?: Loan; trigger?: React
   const totalPayableMinor = calculatedEmiMinor * watchTenure;
   const totalInterestMinor = Math.max(0, totalPayableMinor - toMinorUnits(watchPrincipal));
 
+  const watchOutstanding = Number(form.watch("currentOutstandingPrincipal")) || 0;
+  const watchCurrentEmi = Number(form.watch("currentEmi")) || 0;
+  const watchRemainingTenure = Number(form.watch("remainingTenureMonths")) || 0;
+
+  // Remaining tenure below original tenure means EMIs have already been
+  // paid before this loan was entered — the outstanding balance for a new
+  // loan should reflect that amortization, not sit at the full principal.
+  const monthsElapsed = Math.max(0, watchTenure - watchRemainingTenure);
+  const emiForElapsed = watchCurrentEmi > 0 ? watchCurrentEmi : fromMinorUnits(calculatedEmiMinor);
+  const elapsedSchedule =
+    monthsElapsed > 0 && watchPrincipal > 0 && emiForElapsed > 0
+      ? generateAmortizationSchedule({
+          principalMinor: toMinorUnits(watchPrincipal),
+          annualRatePercent: watchRate,
+          emiMinor: toMinorUnits(emiForElapsed),
+          maxMonths: monthsElapsed,
+        })
+      : null;
+  const impliedOutstandingMinor =
+    monthsElapsed > 0 && elapsedSchedule && elapsedSchedule.rows.length > 0
+      ? elapsedSchedule.rows[elapsedSchedule.rows.length - 1].closingBalanceMinor
+      : toMinorUnits(watchPrincipal);
+
   // "Current outstanding" is deliberately principal-only — every other
   // calculation in the app (interest accrual, payoff simulations, the debt
   // gauge) depends on that. The total money still owed, principal plus the
@@ -83,8 +106,6 @@ export function LoanFormDialog({ loan, trigger }: { loan?: Loan; trigger?: React
   // real remaining balance and the actual EMI on record (not the original
   // loan terms), simulated month by month so a final smaller payment is
   // accounted for correctly.
-  const watchOutstanding = Number(form.watch("currentOutstandingPrincipal")) || 0;
-  const watchCurrentEmi = Number(form.watch("currentEmi")) || 0;
   const remainingSchedule =
     watchOutstanding > 0 && watchCurrentEmi > 0
       ? generateAmortizationSchedule({
@@ -114,13 +135,16 @@ export function LoanFormDialog({ loan, trigger }: { loan?: Loan; trigger?: React
     setEmiTouched(true);
   }
 
-  // A brand-new loan hasn't had a single payment yet, so its outstanding
-  // balance is the principal itself — default it there instead of leaving
-  // the field at 0 for the user to fix by re-typing the same number.
+  // A brand-new loan with no elapsed tenure hasn't had a single payment yet,
+  // so its outstanding balance is the principal itself; one entered with
+  // remaining tenure already below the original tenure implies EMIs were
+  // already paid before today, so the balance is amortized down from the
+  // principal by that many months instead. Either way this only fills the
+  // field in — the user's own entry always wins once they touch it.
   useEffect(() => {
     if (isEdit || outstandingTouched || watchPrincipal <= 0) return;
-    form.setValue("currentOutstandingPrincipal", watchPrincipal, { shouldValidate: true });
-  }, [isEdit, outstandingTouched, watchPrincipal, form]);
+    form.setValue("currentOutstandingPrincipal", fromMinorUnits(impliedOutstandingMinor), { shouldValidate: true });
+  }, [isEdit, outstandingTouched, impliedOutstandingMinor, watchPrincipal, form]);
 
   async function onSubmit(values: LoanInput) {
     const result = isEdit ? await updateLoan(loan!.id, values) : await createLoan(values);
@@ -255,7 +279,11 @@ export function LoanFormDialog({ loan, trigger }: { loan?: Loan; trigger?: React
                       />
                     </FormControl>
                     {!isEdit ? (
-                      <FormDescription>Defaults to the original principal for a new loan — edit if some has already been paid.</FormDescription>
+                      <FormDescription>
+                        {monthsElapsed > 0
+                          ? `Estimated from principal, rate & EMI after ${monthsElapsed} elapsed month(s) — edit if the lender's figure differs.`
+                          : "Defaults to the original principal for a new loan — edit if some has already been paid."}
+                      </FormDescription>
                     ) : null}
                     {totalRemainingInclInterestMinor != null ? (
                       <FormDescription className="text-(--fl-green-dark)">
