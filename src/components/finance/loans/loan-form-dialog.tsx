@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
@@ -8,11 +8,12 @@ import { Plus } from "lucide-react";
 
 import { loanSchema, type LoanInput } from "@/lib/validations/loans";
 import { createLoan, updateLoan } from "@/lib/actions/loans";
-import { fromMinorUnits } from "@/lib/money";
+import { fromMinorUnits, formatCurrency, toMinorUnits } from "@/lib/money";
+import { calculateEmiMinor } from "@/lib/finance/emi";
 
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -50,6 +51,42 @@ export function LoanFormDialog({ loan, trigger }: { loan?: Loan; trigger?: React
       status: loan?.status ?? "ACTIVE",
     },
   });
+
+  // Original principal, rate, and tenure are the loan's real terms — EMI is
+  // a function of those, not an independent fact, so it is derived here with
+  // the same reducing-balance formula lenders use rather than left for the
+  // user to compute by hand.
+  const [emiTouched, setEmiTouched] = useState(false);
+  useEffect(() => {
+    if (open) setEmiTouched(false);
+  }, [open]);
+
+  // Inputs are plain HTML number fields, so react-hook-form's watched value
+  // is the raw string the user is typing (coerced to a number only by zod at
+  // submit time) — Number(...) here is required, not cosmetic.
+  const watchPrincipal = Number(form.watch("originalPrincipal")) || 0;
+  const watchRate = Number(form.watch("annualInterestRatePercent")) || 0;
+  const watchTenure = Number(form.watch("originalTenureMonths")) || 0;
+
+  const calculatedEmiMinor = calculateEmiMinor(toMinorUnits(watchPrincipal), watchRate, watchTenure);
+  const totalPayableMinor = calculatedEmiMinor * watchTenure;
+  const totalInterestMinor = Math.max(0, totalPayableMinor - toMinorUnits(watchPrincipal));
+
+  // New loans have no real-world EMI recorded yet, so the calculated figure
+  // fills the field automatically until the user types their own value —
+  // once they do, their entry is authoritative (e.g. the lender rounds EMIs
+  // to the nearest 100) and this stops overwriting it. Existing loans keep
+  // whatever EMI is already on record; the summary below just offers the
+  // calculated figure for comparison, applied only on request.
+  useEffect(() => {
+    if (isEdit || emiTouched || calculatedEmiMinor <= 0) return;
+    form.setValue("currentEmi", fromMinorUnits(calculatedEmiMinor), { shouldValidate: true });
+  }, [isEdit, emiTouched, calculatedEmiMinor, form]);
+
+  function useCalculatedEmi() {
+    form.setValue("currentEmi", fromMinorUnits(calculatedEmiMinor), { shouldValidate: true, shouldDirty: true });
+    setEmiTouched(true);
+  }
 
   async function onSubmit(values: LoanInput) {
     const result = isEdit ? await updateLoan(loan!.id, values) : await createLoan(values);
@@ -201,8 +238,19 @@ export function LoanFormDialog({ loan, trigger }: { loan?: Loan; trigger?: React
                   <FormItem>
                     <FormLabel>Current EMI</FormLabel>
                     <FormControl>
-                      <Input type="number" inputMode="decimal" {...field} />
+                      <Input
+                        type="number"
+                        inputMode="decimal"
+                        {...field}
+                        onChange={(e) => {
+                          setEmiTouched(true);
+                          field.onChange(e);
+                        }}
+                      />
                     </FormControl>
+                    {!isEdit ? (
+                      <FormDescription>Calculated automatically from principal, rate & tenure — edit to override.</FormDescription>
+                    ) : null}
                     <FormMessage />
                   </FormItem>
                 )}
@@ -236,6 +284,24 @@ export function LoanFormDialog({ loan, trigger }: { loan?: Loan; trigger?: React
                 )}
               />
             </div>
+            {calculatedEmiMinor > 0 ? (
+              <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-(--fl-mint-soft) px-3.5 py-3 text-[12.5px]">
+                <div className="space-y-0.5">
+                  <div className="font-semibold text-(--fl-green-dark)">
+                    Calculated EMI: {formatCurrency(calculatedEmiMinor)} / month
+                  </div>
+                  <div className="text-(--fl-muted)">
+                    Total payable {formatCurrency(totalPayableMinor)} over {watchTenure} months · Total interest{" "}
+                    {formatCurrency(totalInterestMinor)}
+                  </div>
+                </div>
+                {isEdit ? (
+                  <Button type="button" size="sm" variant="outline" onClick={useCalculatedEmi}>
+                    Use calculated EMI
+                  </Button>
+                ) : null}
+              </div>
+            ) : null}
             <div className="grid grid-cols-2 gap-3">
               <FormField
                 control={form.control}
