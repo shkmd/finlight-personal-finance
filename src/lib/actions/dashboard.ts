@@ -107,6 +107,13 @@ export async function getDashboardSummary(target?: { year: number; month: number
     (s, i) => s + monthlyEquivalentMinor(i.contributionAmountMinor, i.frequency),
     0
   );
+  const activeInvestmentsCount = activeInvestments.length;
+
+  // "Net this month" is income minus every outflow — paid expenses AND
+  // money committed to active investments this month (their monthly
+  // equivalent, since a SIP due this month is as real a commitment as an
+  // expense even before the contribution is separately recorded).
+  const netThisMonthMinor = monthIncomeMinor - monthExpenseMinor - activeSipMonthlyMinor;
 
   const essentialExpenses = seriesExpenses.filter((e) => e.category && ESSENTIAL_CATEGORY_NAMES.has(e.category.name));
   const avgMonthlyEssentialMinor = essentialExpenses.reduce((s, e) => s + e.amountMinor, 0) / 6;
@@ -123,7 +130,7 @@ export async function getDashboardSummary(target?: { year: number; month: number
     : 0;
   const emergencyFundProgressPercent = primaryFund ? progressPercent(emergencyFundBalanceMinor, emergencyFundTargetMinor) : 0;
 
-  const savingsRatePercent = monthIncomeMinor > 0 ? ((monthIncomeMinor - monthExpenseMinor) / monthIncomeMinor) * 100 : 0;
+  const savingsRatePercent = monthIncomeMinor > 0 ? (netThisMonthMinor / monthIncomeMinor) * 100 : 0;
 
   const [nextIncome, nextLoan, nextInvestment, upcomingBills] = await Promise.all([
     prisma.incomeTransaction.findFirst({
@@ -215,6 +222,7 @@ export async function getDashboardSummary(target?: { year: number; month: number
     monthLabel: `${MONTH_SHORT[month - 1]} ${year}`,
     totalIncomeReceivedMinor: monthIncomeMinor,
     totalExpensesThisMonthMinor: monthExpenseMinor,
+    netThisMonthMinor,
     plannedAllocationMinor: budgetVsActual?.totalPlannedAllocationMinor ?? 0,
     currentAvailableCashMinor,
     liquidAccountsCount,
@@ -234,6 +242,7 @@ export async function getDashboardSummary(target?: { year: number; month: number
     extraMonthlyAmountMinor: latestScenario?.extraMonthlyAmountMinor ?? 0,
     activeSipMonthlyMinor,
     pausedSipMonthlyMinor,
+    activeInvestmentsCount,
     emergencyFundBalanceMinor,
     emergencyFundTargetMinor,
     emergencyFundProgressPercent,

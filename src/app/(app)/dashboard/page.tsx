@@ -37,7 +37,6 @@ export default async function DashboardPage({
   ]);
 
   const isEmpty = summary.totalIncomeReceivedMinor === 0 && summary.totalExpensesThisMonthMinor === 0 && summary.totalOutstandingDebtMinor === 0;
-  const net = summary.totalIncomeReceivedMinor - summary.totalExpensesThisMonthMinor;
 
   return (
     <div className="flex flex-col gap-4">
@@ -54,13 +53,13 @@ export default async function DashboardPage({
 
       {isEmpty ? <SampleDataBanner hasSampleData={sampleDataExists} /> : null}
 
-      <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(210px,1fr))] gap-3.5">
         <HeadlineTile
           variant="filled"
           label="Net this month"
-          value={isEmpty ? "—" : formatCurrency(net)}
+          value={isEmpty ? "—" : formatCurrency(summary.netThisMonthMinor)}
           pill={isEmpty ? "No data" : `${formatPercent(summary.savingsRatePercent, 0)} saved`}
-          sub={isEmpty ? "Load sample data" : "Income minus everything paid"}
+          sub={isEmpty ? "Load sample data" : "Income minus expenses and investments"}
           href="/transactions"
         />
         <HeadlineTile
@@ -77,6 +76,13 @@ export default async function DashboardPage({
           pill={summary.totalMonthlyEmiMinor ? `${formatCurrency(summary.totalMonthlyEmiMinor)} EMI` : "No loans"}
           sub={summary.totalMonthlyEmiMinor ? `${formatPercent(summary.emiToIncomeRatio, 0)} of income` : "Add a loan"}
           href="/debt-planner"
+        />
+        <HeadlineTile
+          label="Investments"
+          value={formatCurrency(summary.activeSipMonthlyMinor)}
+          pill={summary.activeInvestmentsCount ? `${summary.activeInvestmentsCount} active` : "No SIPs"}
+          sub={summary.activeInvestmentsCount ? "Monthly SIP commitment" : "Add an investment"}
+          href="/investments"
         />
         <HeadlineTile
           label="Emergency fund"
