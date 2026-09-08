@@ -9,7 +9,7 @@ import { Plus } from "lucide-react";
 import { loanSchema, type LoanInput } from "@/lib/validations/loans";
 import { createLoan, updateLoan } from "@/lib/actions/loans";
 import { fromMinorUnits, formatCurrency, toMinorUnits } from "@/lib/money";
-import { calculateEmiMinor } from "@/lib/finance/emi";
+import { calculateEmiMinor, generateAmortizationSchedule } from "@/lib/finance/emi";
 
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -75,6 +75,28 @@ export function LoanFormDialog({ loan, trigger }: { loan?: Loan; trigger?: React
   const calculatedEmiMinor = calculateEmiMinor(toMinorUnits(watchPrincipal), watchRate, watchTenure);
   const totalPayableMinor = calculatedEmiMinor * watchTenure;
   const totalInterestMinor = Math.max(0, totalPayableMinor - toMinorUnits(watchPrincipal));
+
+  // "Current outstanding" is deliberately principal-only — every other
+  // calculation in the app (interest accrual, payoff simulations, the debt
+  // gauge) depends on that. The total money still owed, principal plus the
+  // interest yet to accrue, is a derived read-only figure computed from the
+  // real remaining balance and the actual EMI on record (not the original
+  // loan terms), simulated month by month so a final smaller payment is
+  // accounted for correctly.
+  const watchOutstanding = Number(form.watch("currentOutstandingPrincipal")) || 0;
+  const watchCurrentEmi = Number(form.watch("currentEmi")) || 0;
+  const remainingSchedule =
+    watchOutstanding > 0 && watchCurrentEmi > 0
+      ? generateAmortizationSchedule({
+          principalMinor: toMinorUnits(watchOutstanding),
+          annualRatePercent: watchRate,
+          emiMinor: toMinorUnits(watchCurrentEmi),
+        })
+      : null;
+  const totalRemainingInclInterestMinor =
+    remainingSchedule && !remainingSchedule.neverAmortizes
+      ? remainingSchedule.totalPrincipalMinor + remainingSchedule.totalInterestMinor
+      : null;
 
   // New loans have no real-world EMI recorded yet, so the calculated figure
   // fills the field automatically until the user types their own value —
@@ -234,6 +256,16 @@ export function LoanFormDialog({ loan, trigger }: { loan?: Loan; trigger?: React
                     </FormControl>
                     {!isEdit ? (
                       <FormDescription>Defaults to the original principal for a new loan — edit if some has already been paid.</FormDescription>
+                    ) : null}
+                    {totalRemainingInclInterestMinor != null ? (
+                      <FormDescription className="text-(--fl-green-dark)">
+                        Total outstanding incl. interest: {formatCurrency(totalRemainingInclInterestMinor)}
+                        {remainingSchedule ? ` over ${remainingSchedule.monthsToPayoff} more month(s)` : ""}
+                      </FormDescription>
+                    ) : remainingSchedule?.neverAmortizes ? (
+                      <FormDescription className="text-(--fl-red)">
+                        This EMI doesn&apos;t cover the monthly interest on the outstanding balance.
+                      </FormDescription>
                     ) : null}
                     <FormMessage />
                   </FormItem>
