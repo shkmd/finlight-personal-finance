@@ -10,6 +10,7 @@ import { loanSchema, type LoanInput } from "@/lib/validations/loans";
 import { createLoan, updateLoan } from "@/lib/actions/loans";
 import { fromMinorUnits, formatCurrency, toMinorUnits } from "@/lib/money";
 import { calculateEmiMinor, generateAmortizationSchedule } from "@/lib/finance/emi";
+import { addMonthsUtc, formatDateOnly } from "@/lib/dates";
 
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -117,6 +118,15 @@ export function LoanFormDialog({ loan, trigger }: { loan?: Loan; trigger?: React
   const totalRemainingInclInterestMinor =
     remainingSchedule && !remainingSchedule.neverAmortizes
       ? remainingSchedule.totalPrincipalMinor + remainingSchedule.totalInterestMinor
+      : null;
+
+  // The loan's end date isn't its own fact to enter and keep in sync — it's
+  // just the next payment plus however many payments remain, so it's shown
+  // here as a computed readout rather than a separate editable field.
+  const watchNextPaymentDate = form.watch("nextPaymentDate");
+  const loanEndDate =
+    watchNextPaymentDate && watchRemainingTenure > 0
+      ? addMonthsUtc(new Date(watchNextPaymentDate), watchRemainingTenure - 1)
       : null;
 
   // New loans have no real-world EMI recorded yet, so the calculated figure
@@ -408,6 +418,9 @@ export function LoanFormDialog({ loan, trigger }: { loan?: Loan; trigger?: React
                     <FormControl>
                       <Input type="date" value={toDateInputValue(field.value)} onChange={(e) => field.onChange(new Date(e.target.value))} />
                     </FormControl>
+                    {loanEndDate ? (
+                      <FormDescription>Loan ends: {formatDateOnly(loanEndDate, "MMM yyyy")}</FormDescription>
+                    ) : null}
                     <FormMessage />
                   </FormItem>
                 )}
