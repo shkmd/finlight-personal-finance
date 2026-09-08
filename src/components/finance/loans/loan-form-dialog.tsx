@@ -57,8 +57,12 @@ export function LoanFormDialog({ loan, trigger }: { loan?: Loan; trigger?: React
   // the same reducing-balance formula lenders use rather than left for the
   // user to compute by hand.
   const [emiTouched, setEmiTouched] = useState(false);
+  const [outstandingTouched, setOutstandingTouched] = useState(false);
   useEffect(() => {
-    if (open) setEmiTouched(false);
+    if (open) {
+      setEmiTouched(false);
+      setOutstandingTouched(false);
+    }
   }, [open]);
 
   // Inputs are plain HTML number fields, so react-hook-form's watched value
@@ -87,6 +91,14 @@ export function LoanFormDialog({ loan, trigger }: { loan?: Loan; trigger?: React
     form.setValue("currentEmi", fromMinorUnits(calculatedEmiMinor), { shouldValidate: true, shouldDirty: true });
     setEmiTouched(true);
   }
+
+  // A brand-new loan hasn't had a single payment yet, so its outstanding
+  // balance is the principal itself — default it there instead of leaving
+  // the field at 0 for the user to fix by re-typing the same number.
+  useEffect(() => {
+    if (isEdit || outstandingTouched || watchPrincipal <= 0) return;
+    form.setValue("currentOutstandingPrincipal", watchPrincipal, { shouldValidate: true });
+  }, [isEdit, outstandingTouched, watchPrincipal, form]);
 
   async function onSubmit(values: LoanInput) {
     const result = isEdit ? await updateLoan(loan!.id, values) : await createLoan(values);
@@ -210,8 +222,19 @@ export function LoanFormDialog({ loan, trigger }: { loan?: Loan; trigger?: React
                   <FormItem>
                     <FormLabel>Current outstanding</FormLabel>
                     <FormControl>
-                      <Input type="number" inputMode="decimal" {...field} />
+                      <Input
+                        type="number"
+                        inputMode="decimal"
+                        {...field}
+                        onChange={(e) => {
+                          setOutstandingTouched(true);
+                          field.onChange(e);
+                        }}
+                      />
                     </FormControl>
+                    {!isEdit ? (
+                      <FormDescription>Defaults to the original principal for a new loan — edit if some has already been paid.</FormDescription>
+                    ) : null}
                     <FormMessage />
                   </FormItem>
                 )}
