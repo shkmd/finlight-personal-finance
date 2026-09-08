@@ -8,29 +8,44 @@ and a dashboard — built on Next.js (App Router), Prisma, and Auth.js.
 ## Stack
 
 - **Framework**: Next.js 16 (App Router, Server Actions, Turbopack)
-- **Database / ORM**: SQLite + Prisma 6 (swap the `datasource` provider in
-  `prisma/schema.prisma` to `postgresql` for production — the schema uses
-  portable types throughout)
+- **Database / ORM**: PostgreSQL + Prisma 6
 - **Auth**: Auth.js v5 (`next-auth`), Credentials provider, JWT sessions
 - **UI**: Tailwind CSS v4 + shadcn/ui (Radix primitives)
 - **Forms/validation**: React Hook Form + Zod
 - **Charts**: Recharts
 - **Tests**: Vitest
 
-## Getting started
+## Deployment
+
+Live on Railway: project `finlight-personal-finance` (Postgres + app service,
+both in the `production` environment). The `app` service's `start` script
+runs `prisma migrate deploy` before `next start` — migrations apply
+automatically on every deploy, at container start (Railway's build stage has
+no private-network access, so migrations can't run during `npm run build`;
+they must run at start instead). The GitHub repo is
+[shkmd/finlight-personal-finance](https://github.com/shkmd/finlight-personal-finance);
+connect it in the Railway dashboard (Settings → Source) for auto-deploy on
+push, or redeploy from a local checkout with `railway up --service app`.
+
+## Getting started (local development)
+
+Needs a Postgres database — either your own local instance, or a tunnel to
+the Railway one via `railway connect Postgres --tunnel-only --port 25432`
+(prints a `postgresql://...@127.0.0.1:25432/...` URL to use as `DATABASE_URL`
+below; keep the tunnel running while you develop).
 
 ```bash
 npm install
-npm run db:migrate   # applies Prisma migrations, creates dev.db
+npm run db:migrate   # applies Prisma migrations
 npm run dev          # http://localhost:3000
 ```
 
-Environment variables (`.env`, already populated for local dev):
+Environment variables (`.env`):
 
 ```
-DATABASE_URL="file:./dev.db"
-AUTH_SECRET="<32+ char random string>"   # regenerate for anything beyond local dev
-NEXTAUTH_URL="http://localhost:3000"
+DATABASE_URL="postgresql://user:password@host:5432/dbname"
+AUTH_SECRET="<32+ char random string>"   # generate: node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
+NEXTAUTH_URL="http://localhost:3000"     # must match whatever host/port you actually run on
 ```
 
 Register an account at `/register`, then use **"Use sample data"** on the
@@ -157,6 +172,3 @@ it is not the security boundary.
   if the project already had a PDF library, and this is a from-scratch
   build. CSV export covers every report listed in the spec.
 - **Bank sync** was intentionally not built, per the spec.
-- The default SQLite datasource is meant for local development / a single
-  deployment; for multi-instance production deployments, point
-  `DATABASE_URL` at Postgres (schema types are already Postgres-compatible).
