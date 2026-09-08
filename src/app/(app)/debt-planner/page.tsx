@@ -18,15 +18,15 @@ export default async function DebtPlannerPage() {
 
   return (
     <div>
-      <PageHeader title="Debt Planner" description="Compare avalanche, snowball, and custom payoff strategies." />
+      <PageHeader title="Debt Planner" description="Move the extra-payment slider and watch the debt-free date move with it." />
       {activeLoans.length === 0 ? (
         <EmptyState icon={Target} title="Add a loan first" description="You need at least one active loan to build a payoff scenario." />
       ) : (
         <ScenarioBuilder loans={activeLoans} releasedSipMinor={releasedSipMinor} />
       )}
 
-      <div className="mt-8">
-        <h2 className="mb-3 text-lg font-semibold">Saved scenarios</h2>
+      <div className="mt-5">
+        <h2 className="mb-3 text-[16px] font-extrabold tracking-tight">Saved scenarios</h2>
         <SavedScenariosList scenarios={scenarios} />
       </div>
     </div>

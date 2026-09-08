@@ -8,7 +8,8 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans:
-    ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    "Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica,
+    Arial, sans-serif;
   --font-mono:
     ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New",
     monospace;
@@ -51,39 +52,64 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+/*
+ * Finlight design tokens. Named after the Finlight v2 handoff spec so
+ * feature components can reference them directly (e.g. var(--fl-green))
+ * for pixel-exact colors, while shadcn/ui primitives pick up the same
+ * palette indirectly through the semantic --primary/--border/etc remap
+ * below. There is no dark-mode variant in the source design — the app
+ * has no theme toggle wired up, so .dark below stays dormant.
+ */
 :root {
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
+  --fl-bg: #e9ece9;
+  --fl-card: #ffffff;
+  --fl-content-bg: #fbfcfb;
+  --fl-ink: #0f1512;
+  --fl-muted: #6c7873;
+  --fl-line: #e8ebe9;
+  --fl-green: #1a7f4b;
+  --fl-green-dark: #0c4429;
+  --fl-green-deep: #083322;
+  --fl-mint: #bfe4cf;
+  --fl-mint-soft: #eaf5ee;
+  --fl-red: #c0392b;
+  --fl-red-soft: #fdeeec;
+  --fl-fill: #f4f6f5;
+  --fl-track: #eef1ef;
+  --fl-hatch: repeating-linear-gradient(45deg, #dfe3e0 0 3px, #f3f5f4 3px 7px);
+
+  --card: var(--fl-card);
+  --card-foreground: var(--fl-ink);
+  --popover: var(--fl-card);
+  --popover-foreground: var(--fl-ink);
+  --primary: var(--fl-green);
+  --primary-foreground: #ffffff;
+  --secondary: var(--fl-mint-soft);
+  --secondary-foreground: var(--fl-green-dark);
+  --muted: var(--fl-fill);
+  --muted-foreground: var(--fl-muted);
+  --accent: var(--fl-mint-soft);
+  --accent-foreground: var(--fl-green-dark);
+  --destructive: var(--fl-red);
+  --border: var(--fl-line);
+  --input: var(--fl-line);
+  --ring: var(--fl-green);
+  --chart-1: var(--fl-green);
+  --chart-2: var(--fl-red);
+  --chart-3: var(--fl-green-dark);
+  --chart-4: #dfe3e0;
+  --chart-5: var(--fl-mint);
+  --radius: 0.875rem;
+  --sidebar: var(--fl-card);
+  --sidebar-foreground: var(--fl-ink);
+  --sidebar-primary: var(--fl-green);
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: var(--fl-mint-soft);
+  --sidebar-accent-foreground: var(--fl-green-dark);
+  --sidebar-border: var(--fl-line);
+  --sidebar-ring: var(--fl-green);
+  --background: var(--fl-bg);
+  --foreground: var(--fl-ink);
 }
 
 .dark {
@@ -126,8 +152,19 @@
   }
   body {
     @apply bg-background text-foreground;
+    -webkit-font-smoothing: antialiased;
   }
   html {
     @apply font-sans;
   }
+  input[type="range"] {
+    accent-color: var(--fl-green);
+  }
+  ::selection {
+    background: var(--fl-mint);
+  }
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
 }

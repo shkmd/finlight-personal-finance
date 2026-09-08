@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/modernist-43fa8a06-2d98-4d7e-973a-27a0ab5ef133/styles.css">
+<script src="_ds/modernist-43fa8a06-2d98-4d7e-973a-27a0ab5ef133/_ds_bundle.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root { --fl-income: #10713c; --fl-income-ink: #0b5b2f; }
+  html, body { margin:0; padding:0; background:var(--color-bg); color:var(--color-text); font-family:var(--font-body); }
+  * { box-sizing:border-box; }
+  a { color:var(--color-accent-700); text-decoration:none; }
+  a:hover { color:var(--color-accent); }
+  input, select, button { font-family:var(--font-body); }
+  input[type=range] { accent-color:var(--color-accent); }
+  ::selection { background:var(--color-accent-200); }
+</style>
+</helmet>
+
+<div style="display:flex; align-items:stretch; min-height:100vh; background:var(--color-bg); color:var(--color-text)">
+
+  <aside style="flex:0 0 auto; width:{{ sidebarW }}; border-right:2px solid var(--color-text); background:var(--color-neutral-100); display:flex; flex-direction:column; position:sticky; top:0; height:100vh; overflow:hidden">
+    <div style="display:flex; align-items:center; gap:10px; padding:18px 14px; border-bottom:2px solid var(--color-text)">
+      <button onClick="{{ toggleSidebar }}" title="Collapse" style="flex:0 0 auto; width:30px; height:30px; display:grid; place-items:center; border:2px solid var(--color-text); background:var(--color-accent); color:#fff; cursor:pointer; padding:0" style-hover="background:var(--color-accent-600)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square"><line x1="4" y1="7" x2="20" y2="7"></line><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="17" x2="14" y2="17"></line></svg>
+      </button>
+      <span style="{{ labelStyle }} font-family:var(--font-heading); font-weight:900; font-size:17px; letter-spacing:-0.02em; text-transform:uppercase">Finlight</span>
+    </div>
+
+    <nav style="display:flex; flex-direction:column; padding:8px 0; overflow-y:auto">
+      <a href="#" onClick="{{ go.dashboard }}" style="display:flex; align-items:center; gap:11px; padding:9px 14px; color:var(--color-text); font-size:13px; font-weight:600; border-left:3px solid transparent; border-left-color:{{ mark.dashboard }}; background:{{ bg.dashboard }}" style-hover="background:var(--color-neutral-200)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex:0 0 auto"><rect x="3" y="3" width="7" height="9"></rect><rect x="14" y="3" width="7" height="5"></rect><rect x="14" y="12" width="7" height="9"></rect><rect x="3" y="16" width="7" height="5"></rect></svg>
+        <span style="{{ labelStyle }}">Dashboard</span>
+      </a>
+      <a href="#" onClick="{{ go.budget }}" style="display:flex; align-items:center; gap:11px; padding:9px 14px; color:var(--color-text); font-size:13px; font-weight:600; border-left:3px solid transparent; border-left-color:{{ mark.budget }}; background:{{ bg.budget }}" style-hover="background:var(--color-neutral-200)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" style="flex:0 0 auto"><path d="M19 7V5H4v14h16v-9H9"></path><circle cx="16" cy="14" r="1.2"></circle></svg>
+        <span style="{{ labelStyle }}">Budget</span>
+      </a>
+      <a href="#" onClick="{{ go.transactions }}" style="display:flex; align-items:center; gap:11px; padding:9px 14px; color:var(--color-text); font-size:13px; font-weight:600; border-left:3px solid transparent; border-left-color:{{ mark.transactions }}; background:{{ bg.transactions }}" style-hover="background:var(--color-neutral-200)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:0 0 auto"><path d="m8 3 4 4-4 4"></path><path d="M4 7h16"></path><path d="m16 21-4-4 4-4"></path><path d="M20 17H4"></path></svg>
+        <span style="{{ labelStyle }}">Transactions</span>
+      </a>
+      <a href="#" onClick="{{ go.accounts }}" style="display:flex; align-items:center; gap:11px; padding:9px 14px; color:var(--color-text); font-size:13px; font-weight:600; border-left:3px solid transparent; border-left-color:{{ mark.accounts }}; background:{{ bg.accounts }}" style-hover="background:var(--color-neutral-200)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex:0 0 auto"><line x1="3" y1="21" x2="21" y2="21"></line><line x1="6" y1="18" x2="6" y2="11"></line><line x1="10" y1="18" x2="10" y2="11"></line><line x1="14" y1="18" x2="14" y2="11"></line><line x1="18" y1="18" x2="18" y2="11"></line><polygon points="12 3 20 8 4 8"></polygon></svg>
+        <span style="{{ labelStyle }}">Accounts</span>
+      </a>
+      <a href="#" onClick="{{ go.loans }}" style="display:flex; align-items:center; gap:11px; padding:9px 14px; color:var(--color-text); font-size:13px; font-weight:600; border-left:3px solid transparent; border-left-color:{{ mark.loans }}; background:{{ bg.loans }}" style-hover="background:var(--color-neutral-200)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="flex:0 0 auto"><path d="M6 3h12"></path><path d="M6 8h12"></path><path d="m6 13 8.5 8"></path><path d="M6 13h3a5 5 0 0 0 0-10"></path></svg>
+        <span style="{{ labelStyle }}">Loans</span>
+      </a>
+      <a href="#" onClick="{{ go.debt }}" style="display:flex; align-items:center; gap:11px; padding:9px 14px; color:var(--color-text); font-size:13px; font-weight:600; border-left:3px solid transparent; border-left-color:{{ mark.debt }}; background:{{ bg.debt }}" style-hover="background:var(--color-neutral-200)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex:0 0 auto"><circle cx="12" cy="12" r="9"></circle><circle cx="12" cy="12" r="5"></circle><circle cx="12" cy="12" r="1.4"></circle></svg>
+        <span style="{{ labelStyle }}">Debt Planner</span>
+      </a>
+      <a href="#" onClick="{{ go.investments }}" style="display:flex; align-items:center; gap:11px; padding:9px 14px; color:var(--color-text); font-size:13px; font-weight:600; border-left:3px solid transparent; border-left-color:{{ mark.investments }}; background:{{ bg.investments }}" style-hover="background:var(--color-neutral-200)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" style="flex:0 0 auto"><polyline points="3 17 9.5 10.5 14 15 21 7"></polyline><polyline points="15 7 21 7 21 13"></polyline></svg>
+        <span style="{{ labelStyle }}">Investments</span>
+      </a>
+      <a href="#" onClick="{{ go.emergency }}" style="display:flex; align-items:center; gap:11px; padding:9px 14px; color:var(--color-text); font-size:13px; font-weight:600; border-left:3px solid transparent; border-left-color:{{ mark.emergency }}; background:{{ bg.emergency }}" style-hover="background:var(--color-neutral-200)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" style="flex:0 0 auto"><path d="M12 21s7.5-3.7 7.5-9.3V5.2L12 2.5 4.5 5.2v6.5C4.5 17.3 12 21 12 21z"></path><path d="m9 12 2 2 4-4"></path></svg>
+        <span style="{{ labelStyle }}">Emergency Fund</span>
+      </a>
+      <a href="#" onClick="{{ go.calendar }}" style="display:flex; align-items:center; gap:11px; padding:9px 14px; color:var(--color-text); font-size:13px; font-weight:600; border-left:3px solid transparent; border-left-color:{{ mark.calendar }}; background:{{ bg.calendar }}" style-hover="background:var(--color-neutral-200)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex:0 0 auto"><rect x="3" y="5" width="18" height="16"></rect><line x1="3" y1="10" x2="21" y2="10"></line><line x1="8" y1="3" x2="8" y2="7"></line><line x1="16" y1="3" x2="16" y2="7"></line></svg>
+        <span style="{{ labelStyle }}">Cash-Flow Calendar</span>
+      </a>
+      <a href="#" onClick="{{ go.reports }}" style="display:flex; align-items:center; gap:11px; padding:9px 14px; color:var(--color-text); font-size:13px; font-weight:600; border-left:3px solid transparent; border-left-color:{{ mark.reports }}; background:{{ bg.reports }}" style-hover="background:var(--color-neutral-200)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" style="flex:0 0 auto"><line x1="4" y1="20" x2="4" y2="11"></line><line x1="10" y1="20" x2="10" y2="4"></line><line x1="16" y1="20" x2="16" y2="14"></line><line x1="21" y1="20" x2="21" y2="8"></line></svg>
+        <span style="{{ labelStyle }}">Reports</span>
+      </a>
+      <a href="#" onClick="{{ go.settings }}" style="display:flex; align-items:center; gap:11px; padding:9px 14px; color:var(--color-text); font-size:13px; font-weight:600; border-left:3px solid transparent; border-left-color:{{ mark.settings }}; background:{{ bg.settings }}" style-hover="background:var(--color-neutral-200)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex:0 0 auto"><circle cx="12" cy="12" r="3"></circle><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"></path></svg>
+        <span style="{{ labelStyle }}">Settings</span>
+      </a>
+    </nav>
+
+    <div style="margin-top:auto; border-top:2px solid var(--color-text); padding:14px; display:flex; align-items:center; gap:10px">
+      <div style="flex:0 0 auto; width:28px; height:28px; background:var(--color-text); color:var(--color-neutral-100); display:grid; place-items:center; font-size:11px; font-weight:800; letter-spacing:0.04em">SM</div>
+      <div style="{{ labelStyle }} min-width:0">
+        <div style="font-size:12px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis">Shivam Mehta</div>
+        <div style="font-size:10px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:var(--color-neutral-600)">INR · en-IN</div>
+      </div>
+    </div>
+  </aside>
+
+  <main style="flex:1 1 auto; min-width:0; display:flex; flex-direction:column">
+
+    <header style="border-bottom:2px solid var(--color-text); padding:20px 24px 16px; display:flex; align-items:flex-end; gap:20px; flex-wrap:wrap">
+      <div style="flex:1 1 260px; min-width:0">
+        <div style="font-size:10px; font-weight:700; letter-spacing:0.14em; text-transform:uppercase; color:var(--color-accent-700); margin-bottom:6px">{{ kicker }}</div>
+        <h1 style="margin:0; font-family:var(--font-heading); font-weight:900; font-size:34px; line-height:1.02; letter-spacing:-0.03em; text-transform:uppercase">{{ screenTitle }}</h1>
+        <p style="margin:6px 0 0; font-size:13px; font-weight:500; color:var(--color-neutral-700); max-width:52ch; text-wrap:pretty">{{ screenSub }}</p>
+      </div>
+      <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap">
+        <div style="display:flex; align-items:stretch; border:2px solid var(--color-text)">
+          <button onClick="{{ prevMonth }}" style="width:32px; border:0; border-right:2px solid var(--color-text); background:transparent; cursor:pointer; font-size:14px; font-weight:800; padding:0" style-hover="background:var(--color-accent-200)">‹</button>
+          <div style="padding:8px 14px; font-size:12px; font-weight:800; letter-spacing:0.06em; text-transform:uppercase; min-width:104px; text-align:center">{{ monthLabel }}</div>
+          <button onClick="{{ nextMonth }}" style="width:32px; border:0; border-left:2px solid var(--color-text); background:transparent; cursor:pointer; font-size:14px; font-weight:800; padding:0" style-hover="background:var(--color-accent-200)">›</button>
+        </div>
+        <div style="display:flex; align-items:stretch; border:2px solid var(--color-text)">
+          <button onClick="{{ setSample }}" style="padding:8px 12px; border:0; border-right:2px solid var(--color-text); cursor:pointer; font-size:11px; font-weight:800; letter-spacing:0.06em; text-transform:uppercase; background:{{ seg.sampleBg }}; color:{{ seg.sampleFg }}">Sample data</button>
+          <button onClick="{{ setEmpty }}" style="padding:8px 12px; border:0; cursor:pointer; font-size:11px; font-weight:800; letter-spacing:0.06em; text-transform:uppercase; background:{{ seg.emptyBg }}; color:{{ seg.emptyFg }}">Empty</button>
+        </div>
+      </div>
+    </header>
+
+    <sc-if value="{{ isDashboard }}" hint-placeholder-val="{{ true }}">
+    <div>
+      <sc-if value="{{ isEmpty }}">
+        <div style="display:flex; align-items:center; gap:20px; flex-wrap:wrap; padding:16px 24px; background:var(--color-accent); color:#fff; border-bottom:2px solid var(--color-text)">
+          <div style="flex:1 1 320px; min-width:0">
+            <div style="font-family:var(--font-heading); font-weight:900; font-size:18px; letter-spacing:-0.02em; text-transform:uppercase">New here?</div>
+            <div style="font-size:13px; font-weight:500; margin-top:2px">Load sample data to see how the dashboard, budget and debt planner work together.</div>
+          </div>
+          <button onClick="{{ setSample }}" style="border:2px solid #fff; background:#fff; color:var(--color-accent-800); font-size:12px; font-weight:800; letter-spacing:0.06em; text-transform:uppercase; padding:10px 16px; cursor:pointer" style-hover="background:var(--color-accent-100)">Use sample data</button>
+        </div>
+      </sc-if>
+
+      <div style="display:flex; gap:8px; flex-wrap:wrap; padding:16px 24px; border-bottom:2px solid var(--color-divider)">
+        <button class="btn btn-primary" onClick="{{ openExpense }}">＋ Add expense</button>
+        <button class="btn btn-secondary" onClick="{{ openIncome }}">＋ Add income</button>
+        <button class="btn btn-secondary" onClick="{{ go.loans }}">Add loan</button>
+        <button class="btn btn-secondary" onClick="{{ go.investments }}">Add investment</button>
+        <button class="btn btn-secondary" onClick="{{ go.budget }}">Create budget</button>
+        <button class="btn btn-secondary" onClick="{{ go.debt }}">Run debt scenario</button>
+      </div>
+
+      <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); background:var(--color-bg)">
+        <sc-for list="{{ headline }}" as="h" hint-placeholder-count="4">
+          <div style="background:var(--color-bg); padding:20px 24px 22px; border-right:2px solid var(--color-text); border-bottom:2px solid var(--color-text)">
+            <div style="font-size:10px; font-weight:700; letter-spacing:0.13em; text-transform:uppercase; color:var(--color-neutral-700)">{{ h.label }}</div>
+            <div style="font-family:var(--font-heading); font-weight:900; font-size:32px; line-height:1.05; letter-spacing:-0.03em; margin-top:10px; font-variant-numeric:tabular-nums; color:{{ h.color }}">{{ h.value }}</div>
+            <div style="font-size:11px; font-weight:600; color:var(--color-neutral-700); margin-top:6px">{{ h.sub }}</div>
+          </div>
+        </sc-for>
+      </div>
+
+      <sc-for list="{{ bands }}" as="band" hint-placeholder-count="3">
+        <section style="border-bottom:2px solid var(--color-divider)">
+          <div style="display:flex; align-items:baseline; gap:12px; padding:14px 24px 10px">
+            <h2 style="margin:0; font-family:var(--font-heading); font-weight:900; font-size:13px; letter-spacing:0.14em; text-transform:uppercase">{{ band.title }}</h2>
+            <span style="height:2px; flex:1 1 auto; background:var(--color-text)"></span>
+            <span style="font-size:10px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--color-neutral-600)">{{ band.note }}</span>
+          </div>
+          <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(184px,1fr)); background:var(--color-bg); border-top:1px solid var(--color-divider)">
+            <sc-for list="{{ band.cells }}" as="c" hint-placeholder-count="8">
+              <div style="background:var(--color-bg); padding:13px 24px 15px; min-height:86px; border-right:1px solid var(--color-divider); border-bottom:1px solid var(--color-divider)" style-hover="background:var(--color-neutral-100)">
+                <div style="font-size:10px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--color-neutral-700); line-height:1.3">{{ c.label }}</div>
+                <div style="font-family:var(--font-heading); font-weight:800; font-size:20px; line-height:1.15; letter-spacing:-0.02em; margin-top:8px; font-variant-numeric:tabular-nums; color:{{ c.color }}">{{ c.value }}</div>
+                <div style="font-size:10px; font-weight:600; color:var(--color-neutral-600); margin-top:3px">{{ c.sub }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </section>
+      </sc-for>
+
+      <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:2px; background:var(--color-text); border-bottom:2px solid var(--color-text)">
+        <section style="background:var(--color-bg); padding:20px 24px 24px; min-width:0">
+          <div style="display:flex; align-items:baseline; justify-content:space-between; gap:12px; flex-wrap:wrap">
+            <h2 style="margin:0; font-family:var(--font-heading); font-weight:900; font-size:15px; letter-spacing:-0.01em; text-transform:uppercase">Income vs expenses</h2>
+            <div style="display:flex; gap:14px; font-size:10px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase">
+              <span style="display:flex; align-items:center; gap:6px"><span style="width:12px; height:12px; background:var(--fl-income)"></span>Income</span>
+              <span style="display:flex; align-items:center; gap:6px"><span style="width:12px; height:12px; background:var(--color-accent)"></span>Expenses</span>
+            </div>
+          </div>
+          <div style="display:flex; align-items:flex-end; gap:2px; height:200px; margin-top:22px; border-bottom:2px solid var(--color-text); position:relative">
+            <sc-for list="{{ bars }}" as="b" hint-placeholder-count="6">
+              <div onMouseEnter="{{ b.enter }}" onMouseLeave="{{ b.leave }}" onClick="{{ b.enter }}" style="flex:1 1 0; min-width:0; height:100%; display:flex; align-items:flex-end; gap:3px; padding:0 4px; position:relative; cursor:pointer; background:{{ b.hoverBg }}">
+                <div style="flex:1 1 0; height:{{ b.incH }}; background:var(--fl-income)"></div>
+                <div style="flex:1 1 0; height:{{ b.expH }}; background:var(--color-accent)"></div>
+                <sc-if value="{{ b.active }}">
+                  <div style="position:absolute; left:50%; bottom:100%; transform:translate(-50%,-8px); background:var(--color-text); color:var(--color-neutral-100); border:2px solid var(--color-text); padding:8px 10px; min-width:150px; z-index:5; pointer-events:none">
+                    <div style="font-size:10px; font-weight:800; letter-spacing:0.1em; text-transform:uppercase">{{ b.label }}</div>
+                    <div style="font-size:11px; font-weight:600; margin-top:5px; font-variant-numeric:tabular-nums; color:#7fd6a4">In {{ b.inc }}</div>
+                    <div style="font-size:11px; font-weight:600; font-variant-numeric:tabular-nums; color:var(--color-accent-400)">Out {{ b.exp }}</div>
+                    <div style="font-size:11px; font-weight:800; margin-top:4px; padding-top:4px; border-top:1px solid var(--color-neutral-600); font-variant-numeric:tabular-nums; color:{{ b.netColor }}">Net {{ b.net }}</div>
+                  </div>
+                </sc-if>
+              </div>
+            </sc-for>
+          </div>
+          <div style="display:flex; gap:2px; margin-top:8px">
+            <sc-for list="{{ bars }}" as="b" hint-placeholder-count="6">
+              <div style="flex:1 1 0; text-align:center; font-size:10px; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; color:{{ b.labelColor }}">{{ b.short }}</div>
+            </sc-for>
+          </div>
+        </section>
+
+        <section style="background:var(--color-bg); padding:20px 24px 24px; min-width:0">
+          <h2 style="margin:0 0 16px; font-family:var(--font-heading); font-weight:900; font-size:15px; letter-spacing:-0.01em; text-transform:uppercase">Upcoming commitments</h2>
+          <sc-if value="{{ hasUpcoming }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex; flex-direction:column">
+              <sc-for list="{{ upcoming }}" as="u" hint-placeholder-count="4">
+                <div style="display:flex; align-items:center; gap:12px; padding:12px 0; border-bottom:1px solid var(--color-divider)">
+                  <div style="flex:0 0 auto; width:42px; text-align:center; border:2px solid var(--color-text); padding:3px 0">
+                    <div style="font-size:14px; font-weight:900; line-height:1">{{ u.day }}</div>
+                    <div style="font-size:8px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase">{{ u.mon }}</div>
+                  </div>
+                  <div style="flex:1 1 auto; min-width:0">
+                    <div style="font-size:13px; font-weight:700">{{ u.label }}</div>
+                    <div style="font-size:10px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:var(--color-neutral-600)">{{ u.kind }}</div>
+                  </div>
+                  <div style="flex:0 0 auto; font-size:14px; font-weight:800; font-variant-numeric:tabular-nums">{{ u.amt }}</div>
+                </div>
+              </sc-for>
+              <div style="display:flex; justify-content:space-between; padding:12px 0 0; font-size:11px; font-weight:800; letter-spacing:0.08em; text-transform:uppercase">
+                <span>Due in next 30 days</span><span style="font-variant-numeric:tabular-nums">{{ upcomingTotal }}</span>
+              </div>
+            </div>
+          </sc-if>
+          <sc-if value="{{ isEmpty }}">
+            <p style="margin:0; font-size:13px; font-weight:500; color:var(--color-neutral-700)">Nothing scheduled right now.</p>
+          </sc-if>
+        </section>
+      </div>
+
+      <section style="padding:20px 24px 28px">
+        <div style="display:flex; align-items:baseline; gap:12px; flex-wrap:wrap">
+          <h2 style="margin:0; font-family:var(--font-heading); font-weight:900; font-size:15px; letter-spacing:-0.01em; text-transform:uppercase">Where the money went</h2>
+          <span style="font-size:11px; font-weight:600; color:var(--color-neutral-700)">Click a category to drill down</span>
+        </div>
+        <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:24px; margin-top:16px">
+          <div style="min-width:0">
+            <sc-for list="{{ cats }}" as="c" hint-placeholder-count="8">
+              <div onClick="{{ c.click }}" style="padding:9px 0; border-bottom:1px solid var(--color-divider); cursor:pointer; border-left:3px solid transparent; border-left-color:{{ c.mark }}; padding-left:{{ c.pad }}" style-hover="background:var(--color-neutral-100)">
+                <div style="display:flex; align-items:baseline; gap:10px">
+                  <span style="flex:1 1 auto; min-width:0; font-size:12px; font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap">{{ c.name }}</span>
+                  <span style="font-size:10px; font-weight:700; color:var(--color-neutral-600); font-variant-numeric:tabular-nums">{{ c.pct }}</span>
+                  <span style="font-size:13px; font-weight:800; font-variant-numeric:tabular-nums">{{ c.amt }}</span>
+                </div>
+                <div style="height:8px; background:var(--color-neutral-200); margin-top:6px">
+                  <div style="height:8px; width:{{ c.w }}; background:{{ c.color }}"></div>
+                </div>
+              </div>
+            </sc-for>
+            <sc-if value="{{ isEmpty }}">
+              <p style="margin:0; font-size:13px; font-weight:500; color:var(--color-neutral-700)">No expenses recorded for {{ monthLabel }}.</p>
+            </sc-if>
+          </div>
+          <div style="min-width:0; border:2px solid var(--color-text); padding:16px 18px; background:var(--color-neutral-100); align-self:start">
+            <sc-if value="{{ hasDrill }}">
+              <div>
+                <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:12px">
+                  <div>
+                    <div style="font-size:10px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:var(--color-accent-700)">Category</div>
+                    <div style="font-family:var(--font-heading); font-weight:900; font-size:20px; letter-spacing:-0.02em; margin-top:4px">{{ drill.name }}</div>
+                    <div style="font-size:12px; font-weight:600; color:var(--color-neutral-700); margin-top:3px">{{ drill.meta }}</div>
+                  </div>
+                  <button onClick="{{ clearDrill }}" style="border:2px solid var(--color-text); background:transparent; cursor:pointer; font-size:11px; font-weight:800; padding:5px 9px" style-hover="background:var(--color-accent-200)">✕</button>
+                </div>
+                <div style="height:2px; background:var(--color-text); margin:14px 0 4px"></div>
+                <sc-for list="{{ drill.items }}" as="t" hint-placeholder-count="4">
+                  <div style="display:flex; align-items:baseline; gap:12px; padding:9px 0; border-bottom:1px solid var(--color-divider)">
+                    <span style="flex:0 0 46px; font-size:10px; font-weight:700; letter-spacing:0.04em; text-transform:uppercase; color:var(--color-neutral-600)">{{ t.date }}</span>
+                    <span style="flex:1 1 auto; min-width:0; font-size:12px; font-weight:600">{{ t.desc }}</span>
+                    <span style="flex:0 0 auto; font-size:12px; font-weight:800; font-variant-numeric:tabular-nums">{{ t.amt }}</span>
+                  </div>
+                </sc-for>
+                <button onClick="{{ drill.seeAll }}" style="margin-top:14px; border:2px solid var(--color-text); background:var(--color-text); color:var(--color-neutral-100); font-size:11px; font-weight:800; letter-spacing:0.06em; text-transform:uppercase; padding:9px 14px; cursor:pointer" style-hover="background:var(--color-accent)">See all in transactions →</button>
+              </div>
+            </sc-if>
+            <sc-if value="{{ noDrill }}" hint-placeholder-val="{{ true }}">
+              <div>
+                <div style="font-size:10px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:var(--color-neutral-600)">Drill-down</div>
+                <p style="margin:10px 0 0; font-size:13px; font-weight:500; color:var(--color-neutral-700); max-width:34ch; text-wrap:pretty">Pick a category on the left to see the transactions behind the number.</p>
+              </div>
+            </sc-if>
+          </div>
+        </div>
+      </section>
+    </div>
+    </sc-if>
+
+    <sc-if value="{{ isDebt }}">
+    <div style="padding:0 0 28px">
+      <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); background:var(--color-bg)">
+        <sc-for list="{{ plan.headline }}" as="h" hint-placeholder-count="4">
+          <div style="background:var(--color-bg); padding:20px 24px 22px; border-right:2px solid var(--color-text); border-bottom:2px solid var(--color-text)">
+            <div style="font-size:10px; font-weight:700; letter-spacing:0.13em; text-transform:uppercase; color:var(--color-neutral-700)">{{ h.label }}</div>
+            <div style="font-family:var(--font-heading); font-weight:900; font-size:30px; line-height:1.05; letter-spacing:-0.03em; margin-top:10px; font-variant-numeric:tabular-nums; color:{{ h.color }}">{{ h.value }}</div>
+            <div style="font-size:11px; font-weight:600; color:var(--color-neutral-700); margin-top:6px">{{ h.sub }}</div>
+          </div>
+        </sc-for>
+      </div>
+
+      <section style="padding:22px 24px; border-bottom:2px solid var(--color-divider); display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:28px">
+        <div style="min-width:0">
+          <h2 style="margin:0 0 14px; font-family:var(--font-heading); font-weight:900; font-size:13px; letter-spacing:0.14em; text-transform:uppercase">Scenario</h2>
+          <div style="font-size:10px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--color-neutral-700)">Extra towards debt each month</div>
+          <div style="font-family:var(--font-heading); font-weight:900; font-size:38px; letter-spacing:-0.03em; margin:6px 0 2px; font-variant-numeric:tabular-nums; color:var(--color-accent-700)">{{ plan.extraLabel }}</div>
+          <input type="range" min="0" max="30000" step="500" value="{{ plan.extra }}" onChange="{{ setExtra }}" onInput="{{ setExtra }}" style="width:100%; margin:10px 0 4px">
+          <div style="display:flex; justify-content:space-between; font-size:10px; font-weight:700; color:var(--color-neutral-600); font-variant-numeric:tabular-nums"><span>₹0</span><span>₹30,000</span></div>
+          <div style="font-size:11px; font-weight:600; color:var(--color-neutral-700); margin-top:10px">Free cash after EMIs and SIPs: {{ plan.freeCash }}</div>
+
+          <div style="height:2px; background:var(--color-divider); margin:20px 0 16px"></div>
+          <div style="font-size:10px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--color-neutral-700); margin-bottom:8px">Payoff order</div>
+          <div style="display:flex; border:2px solid var(--color-text); width:fit-content">
+            <button onClick="{{ setAvalanche }}" style="padding:9px 14px; border:0; border-right:2px solid var(--color-text); cursor:pointer; font-size:11px; font-weight:800; letter-spacing:0.06em; text-transform:uppercase; background:{{ plan.avaBg }}; color:{{ plan.avaFg }}">Avalanche</button>
+            <button onClick="{{ setSnowball }}" style="padding:9px 14px; border:0; cursor:pointer; font-size:11px; font-weight:800; letter-spacing:0.06em; text-transform:uppercase; background:{{ plan.snowBg }}; color:{{ plan.snowFg }}">Snowball</button>
+          </div>
+          <p style="margin:10px 0 0; font-size:11px; font-weight:600; color:var(--color-neutral-700); max-width:40ch; text-wrap:pretty">{{ plan.strategyNote }}</p>
+        </div>
+
+        <div style="min-width:0">
+          <h2 style="margin:0 0 14px; font-family:var(--font-heading); font-weight:900; font-size:13px; letter-spacing:0.14em; text-transform:uppercase">Total balance over time</h2>
+          <svg viewBox="0 0 100 46" preserveAspectRatio="none" style="width:100%; height:210px; border-bottom:2px solid var(--color-text); border-left:2px solid var(--color-text); display:block">
+            <polyline points="{{ plan.basePoints }}" fill="none" stroke="var(--color-neutral-500)" stroke-width="2" stroke-dasharray="3 2" vector-effect="non-scaling-stroke"></polyline>
+            <polyline points="{{ plan.accPoints }}" fill="none" stroke="var(--color-accent)" stroke-width="2.5" vector-effect="non-scaling-stroke"></polyline>
+          </svg>
+          <div style="display:flex; justify-content:space-between; font-size:10px; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; color:var(--color-neutral-600); margin-top:8px">
+            <span>Today</span><span>{{ plan.axisEnd }}</span>
+          </div>
+          <div style="display:flex; gap:16px; margin-top:12px; font-size:10px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase">
+            <span style="display:flex; align-items:center; gap:6px"><span style="width:16px; height:2px; background:var(--color-neutral-500)"></span>Minimum EMIs only</span>
+            <span style="display:flex; align-items:center; gap:6px"><span style="width:16px; height:3px; background:var(--color-accent)"></span>With extra {{ plan.extraLabel }}</span>
+          </div>
+        </div>
+      </section>
+
+      <section style="padding:22px 24px 0">
+        <h2 style="margin:0 0 14px; font-family:var(--font-heading); font-weight:900; font-size:13px; letter-spacing:0.14em; text-transform:uppercase">Loans — {{ plan.orderLabel }}</h2>
+        <table class="table" style="width:100%">
+          <thead><tr>
+            <th style="text-align:left">#</th><th style="text-align:left">Loan</th><th style="text-align:right">Outstanding</th><th style="text-align:right">Rate</th><th style="text-align:right">EMI</th><th style="text-align:right">Payoff</th>
+          </tr></thead>
+          <tbody>
+            <sc-for list="{{ plan.loans }}" as="l" hint-placeholder-count="4">
+              <tr>
+                <td style="font-weight:800; color:{{ l.rankColor }}">{{ l.rank }}</td>
+                <td>
+                  <div style="font-weight:700">{{ l.name }}</div>
+                  <div style="height:6px; background:var(--color-neutral-200); margin-top:6px; max-width:220px"><div style="height:6px; width:{{ l.w }}; background:{{ l.color }}"></div></div>
+                </td>
+                <td style="text-align:right; font-variant-numeric:tabular-nums; font-weight:700">{{ l.bal }}</td>
+                <td style="text-align:right; font-variant-numeric:tabular-nums">{{ l.rate }}</td>
+                <td style="text-align:right; font-variant-numeric:tabular-nums">{{ l.emi }}</td>
+                <td style="text-align:right; font-variant-numeric:tabular-nums; font-weight:700; color:var(--color-accent-700)">{{ l.payoff }}</td>
+              </tr>
+            </sc-for>
+          </tbody>
+        </table>
+      </section>
+    </div>
+    </sc-if>
+
+    <sc-if value="{{ isTx }}">
+    <div style="padding:0 0 28px">
+      <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center; padding:16px 24px; border-bottom:2px solid var(--color-divider)">
+        <input class="input" type="text" placeholder="Search description, category, method…" value="{{ tx.q }}" onChange="{{ setQ }}" onInput="{{ setQ }}" style="flex:1 1 240px; min-width:0">
+        <select class="input" value="{{ tx.type }}" onChange="{{ setType }}" style="flex:0 0 auto; width:auto">
+          <option>All types</option><option>Expense</option><option>Income</option>
+        </select>
+        <select class="input" value="{{ tx.cat }}" onChange="{{ setCat }}" style="flex:0 0 auto; width:auto">
+          <sc-for list="{{ tx.catOptions }}" as="o" hint-placeholder-count="6"><option>{{ o }}</option></sc-for>
+        </select>
+        <div style="display:flex; border:2px solid var(--color-text)">
+          <button onClick="{{ scopeMonth }}" style="padding:9px 12px; border:0; border-right:2px solid var(--color-text); cursor:pointer; font-size:11px; font-weight:800; letter-spacing:0.06em; text-transform:uppercase; background:{{ tx.monthBg }}; color:{{ tx.monthFg }}">{{ monthLabel }}</button>
+          <button onClick="{{ scopeAll }}" style="padding:9px 12px; border:0; cursor:pointer; font-size:11px; font-weight:800; letter-spacing:0.06em; text-transform:uppercase; background:{{ tx.allBg }}; color:{{ tx.allFg }}">All months</button>
+        </div>
+        <button class="btn btn-primary" onClick="{{ openExpense }}">＋ Add</button>
+      </div>
+
+      <div style="display:flex; gap:2px; background:var(--color-text); border-bottom:2px solid var(--color-text)">
+        <sc-for list="{{ tx.stats }}" as="s" hint-placeholder-count="3">
+          <div style="flex:1 1 0; min-width:0; background:var(--color-bg); padding:14px 24px">
+            <div style="font-size:10px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:var(--color-neutral-700)">{{ s.label }}</div>
+            <div style="font-family:var(--font-heading); font-weight:900; font-size:22px; letter-spacing:-0.02em; margin-top:6px; font-variant-numeric:tabular-nums; color:{{ s.color }}">{{ s.value }}</div>
+          </div>
+        </sc-for>
+      </div>
+
+      <div style="padding:0 24px">
+        <table class="table" style="width:100%">
+          <thead><tr>
+            <th style="text-align:left">Date</th><th style="text-align:left">Description</th><th style="text-align:left">Category</th><th style="text-align:left">Method</th><th style="text-align:right">Amount</th>
+          </tr></thead>
+          <tbody>
+            <sc-for list="{{ tx.rows }}" as="t" hint-placeholder-count="10">
+              <tr>
+                <td style="white-space:nowrap; font-variant-numeric:tabular-nums; color:var(--color-neutral-700)">{{ t.date }}</td>
+                <td style="font-weight:700">{{ t.desc }}</td>
+                <td><span class="tag tag-outline">{{ t.cat }}</span></td>
+                <td style="color:var(--color-neutral-700)">{{ t.method }}</td>
+                <td style="text-align:right; font-weight:800; font-variant-numeric:tabular-nums; white-space:nowrap; color:{{ t.color }}">{{ t.signed }}</td>
+              </tr>
+            </sc-for>
+          </tbody>
+        </table>
+        <sc-if value="{{ tx.none }}">
+          <p style="font-size:13px; font-weight:600; color:var(--color-neutral-700); padding:24px 0">No transactions match these filters.</p>
+        </sc-if>
+      </div>
+    </div>
+    </sc-if>
+
+    <sc-if value="{{ isStub }}">
+      <div style="padding:48px 24px; max-width:56ch">
+        <div style="font-size:10px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:var(--color-accent-700)">Not in this prototype</div>
+        <p style="margin:12px 0 20px; font-size:15px; font-weight:500; color:var(--color-neutral-800); text-wrap:pretty">This redesign covers the dashboard, the debt planner and transactions. The rest of the navigation is live so you can feel the shell.</p>
+        <button class="btn btn-primary" onClick="{{ go.dashboard }}">← Back to dashboard</button>
+      </div>
+    </sc-if>
+
+  </main>
+
+  <sc-if value="{{ sheetOpen }}">
+    <div onClick="{{ closeSheet }}" style="position:fixed; inset:0; background:color-mix(in srgb, #201e1d 45%, transparent); z-index:40"></div>
+  </sc-if>
+  <sc-if value="{{ sheetOpen }}">
+    <div style="position:fixed; top:0; right:0; bottom:0; width:min(420px,100%); background:var(--color-bg); border-left:2px solid var(--color-text); z-index:41; display:flex; flex-direction:column; box-shadow:var(--shadow-lg)">
+      <div style="display:flex; align-items:center; justify-content:space-between; padding:18px 20px; border-bottom:2px solid var(--color-text)">
+        <div>
+          <div style="font-size:10px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:var(--color-accent-700)">{{ monthLabel }}</div>
+          <h2 style="margin:4px 0 0; font-family:var(--font-heading); font-weight:900; font-size:22px; letter-spacing:-0.02em; text-transform:uppercase">{{ sheet.title }}</h2>
+        </div>
+        <button onClick="{{ closeSheet }}" style="border:2px solid var(--color-text); background:transparent; cursor:pointer; font-size:13px; font-weight:800; padding:6px 10px" style-hover="background:var(--color-accent-200)">✕</button>
+      </div>
+      <div style="display:flex; border-bottom:2px solid var(--color-divider)">
+        <button onClick="{{ openExpense }}" style="flex:1 1 0; padding:12px; border:0; border-right:2px solid var(--color-divider); cursor:pointer; font-size:11px; font-weight:800; letter-spacing:0.06em; text-transform:uppercase; background:{{ sheet.expBg }}; color:{{ sheet.expFg }}">Expense</button>
+        <button onClick="{{ openIncome }}" style="flex:1 1 0; padding:12px; border:0; cursor:pointer; font-size:11px; font-weight:800; letter-spacing:0.06em; text-transform:uppercase; background:{{ sheet.incBg }}; color:{{ sheet.incFg }}">Income</button>
+      </div>
+      <div style="flex:1 1 auto; overflow-y:auto; padding:20px; display:flex; flex-direction:column; gap:16px">
+        <div class="field">
+          <label for="fl-amt">Amount (₹)</label>
+          <input class="input" id="fl-amt" type="number" min="0" step="1" placeholder="0" ref="{{ refAmount }}">
+        </div>
+        <div class="field">
+          <label for="fl-desc">Description</label>
+          <input class="input" id="fl-desc" type="text" placeholder="{{ sheet.descHint }}" ref="{{ refDesc }}">
+        </div>
+        <div class="field">
+          <label for="fl-cat">{{ sheet.catLabel }}</label>
+          <select class="input" id="fl-cat" ref="{{ refCat }}">
+            <sc-for list="{{ sheet.cats }}" as="c" hint-placeholder-count="6"><option>{{ c }}</option></sc-for>
+          </select>
+        </div>
+        <div class="field">
+          <label for="fl-day">Day of month</label>
+          <input class="input" id="fl-day" type="number" min="1" max="31" placeholder="22" ref="{{ refDay }}">
+        </div>
+        <div class="field">
+          <label for="fl-method">Payment method</label>
+          <select class="input" id="fl-method" ref="{{ refMethod }}">
+            <sc-for list="{{ sheet.methods }}" as="m" hint-placeholder-count="4"><option>{{ m }}</option></sc-for>
+          </select>
+        </div>
+        <sc-if value="{{ sheet.err }}">
+          <div style="border:2px solid var(--color-accent); background:var(--color-accent-100); color:var(--color-accent-800); padding:10px 12px; font-size:12px; font-weight:700">Enter an amount greater than zero.</div>
+        </sc-if>
+      </div>
+      <div style="border-top:2px solid var(--color-text); padding:16px 20px; display:flex; gap:10px">
+        <button class="btn btn-primary" onClick="{{ saveEntry }}" style="flex:1 1 auto">{{ sheet.cta }}</button>
+        <button class="btn btn-ghost" onClick="{{ closeSheet }}">Cancel</button>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ toast }}">
+    <div style="position:fixed; left:50%; bottom:26px; transform:translateX(-50%); background:var(--color-text); color:var(--color-neutral-100); border:2px solid var(--color-text); padding:11px 18px; font-size:12px; font-weight:700; letter-spacing:0.04em; z-index:60; box-shadow:var(--shadow-md)">{{ toast }}</div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:1000},&quot;startScreen&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;dashboard&quot;,&quot;debt&quot;,&quot;transactions&quot;],&quot;default&quot;:&quot;dashboard&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Prototype&quot;},&quot;sampleData&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Prototype&quot;},&quot;sidebarCollapsed&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Prototype&quot;}}">
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.months = [
+      { label: "Apr 2026", short: "Apr", f: 1.32, bonus: 0 },
+      { label: "May 2026", short: "May", f: 1.55, bonus: 0 },
+      { label: "Jun 2026", short: "Jun", f: 1.10, bonus: 14000 },
+      { label: "Jul 2026", short: "Jul", f: 1.42, bonus: 0 },
+      { label: "Aug 2026", short: "Aug", f: 1.68, bonus: 0 },
+      { label: "Sep 2026", short: "Sep", f: 1.00, bonus: 0 }
+    ];
+    this.base = [
+      { d: 1, desc: "Salary credit", cat: "Salary", amt: 185000, m: "Bank Transfer", t: "income", fixed: true },
+      { d: 1, desc: "Monthly rent", cat: "Rent", amt: 28000, m: "Bank Transfer", t: "expense", fixed: true },
+      { d: 2, desc: "Home loan EMI", cat: "Loan EMI", amt: 34200, m: "Auto-Debit", t: "expense", fixed: true },
+      { d: 3, desc: "Car loan EMI", cat: "Loan EMI", amt: 12850, m: "Auto-Debit", t: "expense", fixed: true },
+      { d: 4, desc: "Personal loan EMI", cat: "Loan EMI", amt: 8100, m: "Auto-Debit", t: "expense", fixed: true },
+      { d: 5, desc: "Credit card payment", cat: "Loan EMI", amt: 6000, m: "UPI", t: "expense", fixed: true },
+      { d: 8, desc: "Weekly groceries", cat: "Groceries", amt: 8400, m: "UPI", t: "expense" },
+      { d: 9, desc: "Electricity bill", cat: "Utilities", amt: 3100, m: "UPI", t: "expense" },
+      { d: 11, desc: "Broadband + mobile", cat: "Utilities", amt: 2100, m: "UPI", t: "expense" },
+      { d: 12, desc: "Petrol", cat: "Fuel", amt: 4800, m: "Credit Card", t: "expense" },
+      { d: 14, desc: "Kirana top-up", cat: "Groceries", amt: 5800, m: "Cash", t: "expense" },
+      { d: 15, desc: "Dinner out", cat: "Dining", amt: 3350, m: "Credit Card", t: "expense" },
+      { d: 16, desc: "Amazon order", cat: "Shopping", amt: 7300, m: "Credit Card", t: "expense" },
+      { d: 17, desc: "OTT subscriptions", cat: "Subscriptions", amt: 1450, m: "Auto-Debit", t: "expense" },
+      { d: 19, desc: "Cafe and snacks", cat: "Dining", amt: 3000, m: "UPI", t: "expense" },
+      { d: 20, desc: "Pharmacy", cat: "Medical", amt: 2200, m: "UPI", t: "expense" },
+      { d: 22, desc: "Household misc", cat: "Other Expenses", amt: 2000, m: "Cash", t: "expense" }
+    ];
+    this.loans = [
+      { name: "Home loan — HDFC", bal: 3860000, rate: 8.6, emi: 34200 },
+      { name: "Car loan — SBI", bal: 412000, rate: 9.4, emi: 12850 },
+      { name: "Personal loan — Axis", bal: 186000, rate: 14.5, emi: 8100 },
+      { name: "Credit card — ICICI", bal: 74500, rate: 42.0, emi: 6000 }
+    ];
+    this.methods = ["UPI", "Cash", "Credit Card", "Debit Card", "Bank Transfer", "Auto-Debit", "Digital Wallet"];
+    this.expenseCats = ["Rent", "Groceries", "Utilities", "Fuel", "Dining", "Shopping", "Subscriptions", "Medical", "Loan EMI", "Other Expenses"];
+    this.incomeCats = ["Salary", "Bonus", "Freelance", "Interest", "Rental income", "Other income"];
+    this.cash = 246800;
+    this.unallocated = 18450;
+    this.refAmount = React.createRef();
+    this.refDesc = React.createRef();
+    this.refCat = React.createRef();
+    this.refDay = React.createRef();
+    this.refMethod = React.createRef();
+    const seed = [];
+    this.months.forEach((m, mi) => {
+      this.base.forEach((b, bi) => {
+        seed.push({
+          id: "s" + mi + "_" + bi, mi, d: b.d, desc: b.desc, cat: b.cat, m: b.m, t: b.t,
+          amt: Math.round(b.fixed ? b.amt : b.amt * m.f)
+        });
+      });
+      if (m.bonus) seed.push({ id: "b" + mi, mi, d: 7, desc: "Annual bonus", cat: "Bonus", m: "Bank Transfer", t: "income", amt: m.bonus });
+    });
+    this.state = {
+      screen: props.startScreen || "dashboard", stubName: "",
+      empty: props.sampleData === false, collapsed: !!props.sidebarCollapsed,
+      mi: 5, txs: seed, hoverBar: null, drill: null,
+      strategy: "avalanche", extra: 6000,
+      q: "", type: "All types", cat: "All categories", scope: "month",
+      sheet: null, sheetErr: false, toast: ""
+    };
+  }
+
+  fmt(n) { return "₹" + Math.round(n).toLocaleString("en-IN"); }
+  pct(n, d) { return n.toFixed(d === undefined ? 1 : d) + "%"; }
+  monthName(off) {
+    const names = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const t = 8 + off, y = 2026 + Math.floor(t / 12);
+    return names[t % 12] + " " + y;
+  }
+  flash(msg) {
+    this.setState({ toast: msg });
+    clearTimeout(this._t);
+    this._t = setTimeout(() => this.setState({ toast: "" }), 2200);
+  }
+
+  monthTxs(mi) { return this.state.empty ? [] : this.state.txs.filter((t) => t.mi === mi); }
+  sumOf(list, type) { return list.filter((t) => t.t === type).reduce((s, t) => s + t.amt, 0); }
+
+  simulate(extra, strategy) {
+    let bals = this.loans.map((l) => ({ ...l }));
+    const pool = this.loans.reduce((s, l) => s + l.emi, 0) + extra;
+    let months = 0, interest = 0;
+    const series = [bals.reduce((s, l) => s + l.bal, 0)];
+    const done = {};
+    while (bals.some((l) => l.bal > 0.5) && months < 600) {
+      months++;
+      let budget = pool;
+      bals.forEach((l) => {
+        if (l.bal <= 0.5) return;
+        const i = (l.bal * l.rate) / 1200;
+        l.bal += i; interest += i;
+      });
+      bals.forEach((l) => {
+        if (l.bal <= 0.5) return;
+        const pay = Math.min(l.emi, l.bal, budget);
+        l.bal -= pay; budget -= pay;
+      });
+      const order = bals.filter((l) => l.bal > 0.5).sort((a, b) =>
+        strategy === "snowball" ? a.bal - b.bal : b.rate - a.rate);
+      order.forEach((l) => {
+        if (budget <= 0) return;
+        const pay = Math.min(l.bal, budget);
+        l.bal -= pay; budget -= pay;
+      });
+      bals.forEach((l) => { if (l.bal <= 0.5 && !done[l.name]) done[l.name] = months; });
+      series.push(bals.reduce((s, l) => s + Math.max(l.bal, 0), 0));
+    }
+    return { months, interest, series, done };
+  }
+
+  points(series, maxV, maxM) {
+    return series.map((v, i) =>
+      ((i / maxM) * 100).toFixed(2) + "," + (46 - (v / maxV) * 44).toFixed(2)).join(" ");
+  }
+
+  renderVals() {
+    const s = this.state, empty = s.empty;
+    const on = "var(--color-text)", off = "transparent";
+    const ink = "var(--color-text)", muted = "var(--color-neutral-700)";
+    const red = "var(--color-accent-700)", ok = "var(--fl-income-ink)";
+
+    const screens = ["dashboard", "budget", "transactions", "accounts", "loans", "debt", "investments", "emergency", "calendar", "reports", "settings"];
+    const go = {}, bg = {}, mark = {};
+    const real = { dashboard: "dashboard", transactions: "transactions", debt: "debt" };
+    screens.forEach((k) => {
+      bg[k] = s.screen === k ? "var(--color-neutral-200)" : "transparent";
+      mark[k] = s.screen === k ? "var(--color-accent)" : "transparent";
+      go[k] = (e) => {
+        if (e && e.preventDefault) e.preventDefault();
+        this.setState({ screen: real[k] ? k : "stub", stubName: k, sheet: null });
+      };
+    });
+
+    const m = this.months[s.mi];
+    const list = this.monthTxs(s.mi);
+    const income = empty ? 0 : this.sumOf(list, "income");
+    const expenses = empty ? 0 : this.sumOf(list, "expense");
+    const cash = empty ? 0 : this.cash;
+    const totalDebt = empty ? 0 : this.loans.reduce((a, l) => a + l.bal, 0);
+    const totalEmi = empty ? 0 : this.loans.reduce((a, l) => a + l.emi, 0);
+    const wavg = empty ? 0 : this.loans.reduce((a, l) => a + l.bal * l.rate, 0) / totalDebt;
+    const savings = income ? ((income - expenses) / income) * 100 : 0;
+    const dash = "—";
+
+    const baseSim = empty ? null : this.simulate(0, s.strategy);
+    const accSim = empty ? null : this.simulate(s.extra, s.strategy);
+    const monthsSaved = empty ? 0 : baseSim.months - accSim.months;
+    const interestSaved = empty ? 0 : baseSim.interest - accSim.interest;
+
+    const upcomingRaw = [
+      { day: "30", mon: "Sep", label: "Home loan EMI", kind: "Auto-debit · HDFC", amt: 34200 },
+      { day: "01", mon: "Oct", label: "Nifty 50 index SIP", kind: "Investment · Groww", amt: 12000 },
+      { day: "03", mon: "Oct", label: "Credit card due", kind: "ICICI Platinum", amt: 24800 },
+      { day: "08", mon: "Oct", label: "Term insurance premium", kind: "Annual · HDFC Life", amt: 18600 }
+    ];
+    const upTotal = upcomingRaw.reduce((a, u) => a + u.amt, 0);
+    const projected = empty ? null : cash + income - expenses - 34200;
+
+    const headline = [
+      { label: "Net this month", value: empty ? dash : this.fmt(income - expenses), sub: empty ? "No data yet" : "Income minus everything paid", color: empty ? ink : (income - expenses < 0 ? red : ok) },
+      { label: "Available cash", value: empty ? this.fmt(0) : this.fmt(cash), sub: empty ? "Add an account to begin" : "Across 4 accounts", color: ink },
+      { label: "Total outstanding debt", value: empty ? this.fmt(0) : this.fmt(totalDebt), sub: empty ? "No loans added" : this.fmt(totalEmi) + " EMI every month", color: red },
+      { label: "Debt-free in", value: empty ? dash : accSim.months + " months", sub: empty ? "Add a loan to project" : this.monthName(accSim.months) + " at current plan", color: ink }
+    ];
+
+    const bands = [
+      {
+        title: "This month", note: m.label, cells: [
+          { label: "Income received", value: empty ? this.fmt(0) : this.fmt(income), sub: empty ? "" : "1 salary credit", color: empty ? ink : ok },
+          { label: "Expenses", value: empty ? this.fmt(0) : this.fmt(expenses), sub: empty ? "" : list.filter((t) => t.t === "expense").length + " transactions", color: red },
+          { label: "Available cash", value: empty ? this.fmt(0) : this.fmt(cash), sub: "", color: ink },
+          { label: "Unallocated cash", value: empty ? "No budget yet" : this.fmt(this.unallocated), sub: empty ? "" : "Not assigned in budget", color: ink },
+          { label: "Projected month-end", value: projected == null ? dash : this.fmt(projected), sub: empty ? "" : "After upcoming EMI", color: projected != null && projected < 0 ? red : ink },
+          { label: "Actual month-end", value: dash, sub: "Month still open", color: muted },
+          { label: "Savings rate", value: empty ? this.pct(0) : this.pct(savings), sub: empty ? "" : "Target 30%", color: savings >= 25 ? ok : red },
+          { label: "Budget adherence", value: empty ? dash : "92%", sub: empty ? "" : "3 categories over", color: ink }
+        ]
+      },
+      {
+        title: "Debt", note: empty ? "No loans" : this.loans.length + " active loans", cells: [
+          { label: "Total outstanding", value: this.fmt(totalDebt), sub: "", color: ink },
+          { label: "Total monthly EMI", value: this.fmt(totalEmi), sub: "", color: ink },
+          { label: "EMI-to-income ratio", value: income ? this.pct((totalEmi / income) * 100) : this.pct(0), sub: "Caution above 40%", color: income && (totalEmi / income) * 100 > 40 ? red : ink },
+          { label: "Weighted avg. rate", value: this.pct(wavg, 2), sub: empty ? "" : "Card at 42% drags this up", color: ink },
+          { label: "Baseline debt-free", value: empty ? dash : this.monthName(baseSim.months), sub: empty ? "" : "Minimum EMIs only", color: muted },
+          { label: "Accelerated debt-free", value: empty ? "No saved plan" : this.monthName(accSim.months), sub: empty ? "" : "With " + this.fmt(s.extra) + "/mo extra", color: red },
+          { label: "Months saved", value: empty ? dash : monthsSaved + "", sub: "", color: monthsSaved > 0 ? ok : muted },
+          { label: "Interest saved", value: empty ? dash : this.fmt(interestSaved), sub: "", color: interestSaved > 0 ? ok : muted }
+        ]
+      },
+      {
+        title: "Savings and investments", note: empty ? "Nothing tracked" : "SIP + emergency fund", cells: [
+          { label: "Active monthly SIP", value: empty ? this.fmt(0) : this.fmt(32000), sub: empty ? "" : "3 funds", color: ink },
+          { label: "Paused SIP", value: empty ? this.fmt(0) : this.fmt(5000), sub: empty ? "" : "1 fund paused", color: muted },
+          { label: "Portfolio value", value: empty ? this.fmt(0) : this.fmt(1284000), sub: empty ? "" : "Invested " + this.fmt(1105000), color: ink },
+          { label: "Unrealised gain", value: empty ? dash : "+16.2%", sub: empty ? "" : "+" + this.fmt(179000), color: ok },
+          { label: "Emergency fund", value: empty ? this.fmt(0) : this.fmt(285000), sub: empty ? "" : "Target " + this.fmt(600000), color: ink },
+          { label: "Emergency fund progress", value: empty ? "0%" : "47%", sub: empty ? "" : "4.2 months of expenses", color: ink }
+        ]
+      }
+    ];
+
+    const maxBar = empty ? 1 : Math.max(...this.months.map((_, i) => {
+      const l = this.monthTxs(i);
+      return Math.max(this.sumOf(l, "income"), this.sumOf(l, "expense"));
+    }));
+    const bars = this.months.map((mm, i) => {
+      const l = this.monthTxs(i);
+      const inc = this.sumOf(l, "income"), exp = this.sumOf(l, "expense");
+      const active = s.hoverBar === i;
+      return {
+        label: mm.label, short: mm.short,
+        incH: empty ? "1%" : ((inc / maxBar) * 100).toFixed(1) + "%",
+        expH: empty ? "1%" : ((exp / maxBar) * 100).toFixed(1) + "%",
+        inc: this.fmt(inc), exp: this.fmt(exp), net: this.fmt(inc - exp),
+        netColor: inc - exp < 0 ? "var(--color-accent-400)" : "#7fd6a4",
+        active: active && !empty,
+        hoverBg: active ? "var(--color-neutral-200)" : "transparent",
+        labelColor: i === s.mi ? "var(--color-accent-700)" : "var(--color-neutral-600)",
+        enter: () => this.setState({ hoverBar: i }),
+        leave: () => this.setState({ hoverBar: null })
+      };
+    });
+
+    const catMap = {};
+    list.filter((t) => t.t === "expense").forEach((t) => { catMap[t.cat] = (catMap[t.cat] || 0) + t.amt; });
+    const catArr = Object.keys(catMap).map((k) => ({ name: k, amt: catMap[k] })).sort((a, b) => b.amt - a.amt);
+    const catMax = catArr.length ? catArr[0].amt : 1;
+    const cats = catArr.map((c) => {
+      const active = s.drill === c.name;
+      return {
+        name: c.name, amt: this.fmt(c.amt), pct: ((c.amt / (expenses || 1)) * 100).toFixed(0) + "%",
+        w: ((c.amt / catMax) * 100).toFixed(1) + "%",
+        color: active ? "var(--color-accent)" : "var(--color-text)",
+        mark: active ? "var(--color-accent)" : "transparent",
+        pad: active ? "10px" : "0px",
+        click: () => this.setState({ drill: active ? null : c.name })
+      };
+    });
+    const drillItems = s.drill ? list.filter((t) => t.cat === s.drill && t.t === "expense") : [];
+    const drillTotal = drillItems.reduce((a, t) => a + t.amt, 0);
+    const drill = {
+      name: s.drill || "",
+      meta: drillItems.length + " transactions · " + this.fmt(drillTotal) + " · " + ((drillTotal / (expenses || 1)) * 100).toFixed(0) + "% of spend",
+      items: drillItems.map((t) => ({ date: t.d + " " + m.short, desc: t.desc, amt: this.fmt(t.amt) })),
+      seeAll: () => this.setState({ screen: "transactions", cat: s.drill, scope: "month", q: "" })
+    };
+
+    const orderSorted = [...this.loans].sort((a, b) =>
+      s.strategy === "snowball" ? a.bal - b.bal : b.rate - a.rate);
+    const loanMax = this.loans[0].bal;
+    const maxM = Math.max(baseSim ? baseSim.months : 1, 1);
+    const maxV = totalDebt || 1;
+    const plan = {
+      extra: s.extra, extraLabel: this.fmt(s.extra), freeCash: this.fmt(28850),
+      avaBg: s.strategy === "avalanche" ? on : "transparent",
+      avaFg: s.strategy === "avalanche" ? "var(--color-neutral-100)" : ink,
+      snowBg: s.strategy === "snowball" ? on : "transparent",
+      snowFg: s.strategy === "snowball" ? "var(--color-neutral-100)" : ink,
+      strategyNote: s.strategy === "avalanche"
+        ? "Highest interest rate first — the credit card at 42% goes before anything else. Cheapest in total interest."
+        : "Smallest balance first — you close accounts sooner, which keeps motivation up but costs more interest.",
+      orderLabel: s.strategy === "avalanche" ? "highest rate first" : "smallest balance first",
+      basePoints: baseSim ? this.points(baseSim.series, maxV, maxM) : "0,46",
+      accPoints: accSim ? this.points(accSim.series, maxV, maxM) : "0,46",
+      axisEnd: baseSim ? this.monthName(baseSim.months) : dash,
+      headline: [
+        { label: "Debt-free date", value: accSim ? this.monthName(accSim.months) : dash, sub: accSim ? accSim.months + " months from today" : "", color: red },
+        { label: "Months saved", value: accSim ? monthsSaved + "" : dash, sub: "Versus minimum EMIs only", color: monthsSaved > 0 ? ok : muted },
+        { label: "Interest saved", value: accSim ? this.fmt(interestSaved) : dash, sub: "Estimate over the full plan", color: monthsSaved > 0 ? ok : muted },
+        { label: "Total interest paid", value: accSim ? this.fmt(accSim.interest) : dash, sub: "On this plan", color: ink }
+      ],
+      loans: orderSorted.map((l, i) => ({
+        rank: i + 1 + "", rankColor: i === 0 ? "var(--color-accent)" : muted,
+        name: l.name, bal: this.fmt(l.bal), rate: this.pct(l.rate, 1), emi: this.fmt(l.emi),
+        payoff: accSim && accSim.done[l.name] ? this.monthName(accSim.done[l.name]) : dash,
+        w: ((l.bal / loanMax) * 100).toFixed(1) + "%",
+        color: i === 0 ? "var(--color-accent)" : "var(--color-text)"
+      }))
+    };
+
+    const scoped = s.scope === "month" ? this.monthTxs(s.mi) : (empty ? [] : s.txs);
+    const q = s.q.trim().toLowerCase();
+    const rows = scoped.filter((t) => {
+      if (s.type === "Expense" && t.t !== "expense") return false;
+      if (s.type === "Income" && t.t !== "income") return false;
+      if (s.cat !== "All categories" && t.cat !== s.cat) return false;
+      if (q && !(t.desc + " " + t.cat + " " + t.m).toLowerCase().includes(q)) return false;
+      return true;
+    }).sort((a, b) => (b.mi - a.mi) || (b.d - a.d));
+    const rowsIn = rows.filter((t) => t.t === "income").reduce((a, t) => a + t.amt, 0);
+    const rowsOut = rows.filter((t) => t.t === "expense").reduce((a, t) => a + t.amt, 0);
+    const allCats = [...new Set(s.txs.map((t) => t.cat))].sort();
+    const tx = {
+      q: s.q, type: s.type, cat: s.cat,
+      catOptions: ["All categories", ...allCats],
+      monthBg: s.scope === "month" ? on : "transparent",
+      monthFg: s.scope === "month" ? "var(--color-neutral-100)" : ink,
+      allBg: s.scope === "all" ? on : "transparent",
+      allFg: s.scope === "all" ? "var(--color-neutral-100)" : ink,
+      none: rows.length === 0,
+      stats: [
+        { label: "Matching transactions", value: rows.length + "", color: ink },
+        { label: "Money in", value: this.fmt(rowsIn), color: ok },
+        { label: "Money out", value: this.fmt(rowsOut), color: red }
+      ],
+      rows: rows.map((t) => ({
+        date: t.d + " " + this.months[t.mi].short, desc: t.desc, cat: t.cat, method: t.m,
+        signed: (t.t === "income" ? "+" : "−") + this.fmt(t.amt),
+        color: t.t === "income" ? ok : ink
+      }))
+    };
+
+    const isIncome = s.sheet === "income";
+    const sheet = {
+      title: isIncome ? "Add income" : "Add expense",
+      cta: isIncome ? "Save income" : "Save expense",
+      descHint: isIncome ? "e.g. Freelance invoice" : "e.g. Weekend groceries",
+      catLabel: isIncome ? "Source" : "Category",
+      cats: isIncome ? this.incomeCats : this.expenseCats,
+      methods: this.methods,
+      err: s.sheetErr,
+      expBg: !isIncome ? on : "transparent", expFg: !isIncome ? "var(--color-neutral-100)" : ink,
+      incBg: isIncome ? on : "transparent", incFg: isIncome ? "var(--color-neutral-100)" : ink
+    };
+
+    const titles = {
+      dashboard: ["Overview", "Dashboard", "Your money this month, and how fast the debt is clearing."],
+      debt: ["Planner", "Debt Planner", "Move the extra-payment slider and watch the debt-free date move with it."],
+      transactions: ["Ledger", "Transactions", "Every credit and debit, filterable down to a single category."],
+      stub: ["Section", (s.stubName || "").replace(/^./, (c) => c.toUpperCase()), "Part of the shell, not built out in this prototype."]
+    };
+    const t3 = titles[s.screen] || titles.dashboard;
+
+    return {
+      go, bg, mark,
+      sidebarW: s.collapsed ? "68px" : "236px",
+      labelStyle: s.collapsed ? "display:none" : "display:block",
+      toggleSidebar: () => this.setState({ collapsed: !s.collapsed }),
+      kicker: t3[0], screenTitle: t3[1], screenSub: t3[2],
+      isDashboard: s.screen === "dashboard", isDebt: s.screen === "debt",
+      isTx: s.screen === "transactions", isStub: s.screen === "stub",
+      isEmpty: empty, monthLabel: m.label,
+      prevMonth: () => this.setState({ mi: Math.max(0, s.mi - 1), drill: null }),
+      nextMonth: () => this.setState({ mi: Math.min(this.months.length - 1, s.mi + 1), drill: null }),
+      setSample: () => this.setState({ empty: false }),
+      setEmpty: () => this.setState({ empty: true, drill: null }),
+      seg: {
+        sampleBg: !empty ? on : "transparent", sampleFg: !empty ? "var(--color-neutral-100)" : ink,
+        emptyBg: empty ? on : "transparent", emptyFg: empty ? "var(--color-neutral-100)" : ink
+      },
+      headline, bands, bars, cats, drill,
+      hasDrill: !!s.drill && drillItems.length > 0, noDrill: !s.drill || drillItems.length === 0,
+      clearDrill: () => this.setState({ drill: null }),
+      upcoming: empty ? [] : upcomingRaw.map((u) => ({ ...u, amt: this.fmt(u.amt) })),
+      upcomingTotal: this.fmt(upTotal), hasUpcoming: !empty,
+      plan,
+      setExtra: (e) => this.setState({ extra: Number(e.target.value) }),
+      setAvalanche: () => this.setState({ strategy: "avalanche" }),
+      setSnowball: () => this.setState({ strategy: "snowball" }),
+      tx,
+      setQ: (e) => this.setState({ q: e.target.value }),
+      setType: (e) => this.setState({ type: e.target.value }),
+      setCat: (e) => this.setState({ cat: e.target.value }),
+      scopeMonth: () => this.setState({ scope: "month" }),
+      scopeAll: () => this.setState({ scope: "all" }),
+      sheet, sheetOpen: !!s.sheet, toast: s.toast,
+      openExpense: () => this.setState({ sheet: "expense", sheetErr: false, empty: false }),
+      openIncome: () => this.setState({ sheet: "income", sheetErr: false, empty: false }),
+      closeSheet: () => this.setState({ sheet: null, sheetErr: false }),
+      refAmount: this.refAmount, refDesc: this.refDesc, refCat: this.refCat,
+      refDay: this.refDay, refMethod: this.refMethod,
+      saveEntry: () => {
+        const amt = Number(this.refAmount.current && this.refAmount.current.value);
+        if (!amt || amt <= 0) { this.setState({ sheetErr: true }); return; }
+        const isInc = s.sheet === "income";
+        const day = Math.min(31, Math.max(1, Number(this.refDay.current && this.refDay.current.value) || 22));
+        const entry = {
+          id: "u" + Date.now(), mi: s.mi, d: day,
+          desc: (this.refDesc.current && this.refDesc.current.value) || (isInc ? "Income" : "Expense"),
+          cat: (this.refCat.current && this.refCat.current.value) || (isInc ? "Salary" : "Other Expenses"),
+          m: (this.refMethod.current && this.refMethod.current.value) || "UPI",
+          t: isInc ? "income" : "expense", amt: Math.round(amt)
+        };
+        this.setState({ txs: [entry, ...s.txs], sheet: null, sheetErr: false });
+        this.flash((isInc ? "Income" : "Expense") + " of " + this.fmt(amt) + " added to " + m.label);
+      }
+    };
+  }
+}
+</script>
+</body>
+</html>

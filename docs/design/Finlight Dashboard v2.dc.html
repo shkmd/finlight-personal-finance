@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/modernist-43fa8a06-2d98-4d7e-973a-27a0ab5ef133/styles.css">
+<script src="_ds/modernist-43fa8a06-2d98-4d7e-973a-27a0ab5ef133/_ds_bundle.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --fl-bg:#e9ece9; --fl-card:#ffffff; --fl-ink:#0f1512; --fl-muted:#6c7873;
+    --fl-line:#e8ebe9; --fl-green:#1a7f4b; --fl-green-dark:#0c4429; --fl-green-deep:#083322;
+    --fl-mint:#bfe4cf; --fl-mint-soft:#eaf5ee; --fl-red:#c0392b; --fl-red-soft:#fdeeec;
+    --fl-hatch:repeating-linear-gradient(45deg,#dfe3e0 0 3px,#f3f5f4 3px 7px);
+  }
+  html, body { margin:0; padding:0; background:var(--fl-bg); color:var(--fl-ink);
+    font-family:"Plus Jakarta Sans", system-ui, sans-serif; -webkit-font-smoothing:antialiased; }
+  * { box-sizing:border-box; }
+  a { color:var(--fl-green); text-decoration:none; }
+  a:hover { color:var(--fl-green-dark); }
+  input, select, button { font-family:inherit; }
+  input[type=range] { accent-color:var(--fl-green); }
+  ::selection { background:var(--fl-mint); }
+  :focus-visible { outline:2px solid var(--fl-green); outline-offset:2px; }
+</style>
+</helmet>
+
+<div style="min-height:100vh; background:var(--fl-bg); padding:20px; display:flex; justify-content:center">
+<div style="width:100%; max-width:1400px; background:var(--fl-card); border-radius:26px; box-shadow:0 18px 50px rgba(15,21,18,0.10); display:flex; align-items:stretch; overflow:hidden">
+
+  <aside style="flex:0 0 auto; width:{{ sidebarW }}; border-right:1px solid var(--fl-line); display:flex; flex-direction:column; padding:22px 14px; gap:22px; overflow:hidden">
+    <div style="display:flex; align-items:center; gap:10px; padding:0 8px">
+      <button onClick="{{ toggleSidebar }}" title="Collapse menu" style="flex:0 0 auto; width:34px; height:34px; border-radius:12px; border:0; background:var(--fl-green); color:#fff; display:grid; place-items:center; cursor:pointer" style-hover="background:var(--fl-green-dark)">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="4" y1="7" x2="20" y2="7"></line><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="17" x2="13" y2="17"></line></svg>
+      </button>
+      <span style="{{ labelStyle }} font-size:19px; font-weight:800; letter-spacing:-0.03em">Finlight</span>
+    </div>
+
+    <div>
+      <div style="{{ labelStyle }} font-size:10px; font-weight:700; letter-spacing:0.14em; text-transform:uppercase; color:var(--fl-muted); padding:0 10px 8px">Menu</div>
+      <div style="display:flex; flex-direction:column; gap:2px">
+        <a href="#" onClick="{{ go.dashboard }}" style="display:flex; align-items:center; gap:11px; padding:10px 12px; border-radius:12px; font-size:13.5px; font-weight:600; color:{{ fg.dashboard }}; background:{{ bg.dashboard }}" style-hover="background:var(--fl-mint-soft)">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex:0 0 auto"><rect x="3" y="3" width="7" height="9" rx="1.5"></rect><rect x="14" y="3" width="7" height="5" rx="1.5"></rect><rect x="14" y="12" width="7" height="9" rx="1.5"></rect><rect x="3" y="16" width="7" height="5" rx="1.5"></rect></svg>
+          <span style="{{ labelStyle }}">Dashboard</span>
+        </a>
+        <a href="#" onClick="{{ go.transactions }}" style="display:flex; align-items:center; gap:11px; padding:10px 12px; border-radius:12px; font-size:13.5px; font-weight:600; color:{{ fg.transactions }}; background:{{ bg.transactions }}" style-hover="background:var(--fl-mint-soft)">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:0 0 auto"><path d="m8 3 4 4-4 4"></path><path d="M4 7h16"></path><path d="m16 21-4-4 4-4"></path><path d="M20 17H4"></path></svg>
+          <span style="{{ labelStyle }}">Transactions</span>
+          <span style="{{ labelStyle }} margin-left:auto; font-size:10px; font-weight:700; background:var(--fl-mint-soft); color:var(--fl-green-dark); padding:3px 7px; border-radius:999px">{{ txCount }}</span>
+        </a>
+        <a href="#" onClick="{{ go.debt }}" style="display:flex; align-items:center; gap:11px; padding:10px 12px; border-radius:12px; font-size:13.5px; font-weight:600; color:{{ fg.debt }}; background:{{ bg.debt }}" style-hover="background:var(--fl-mint-soft)">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex:0 0 auto"><circle cx="12" cy="12" r="9"></circle><circle cx="12" cy="12" r="5"></circle><circle cx="12" cy="12" r="1.4"></circle></svg>
+          <span style="{{ labelStyle }}">Debt Planner</span>
+        </a>
+        <a href="#" onClick="{{ go.budget }}" style="display:flex; align-items:center; gap:11px; padding:10px 12px; border-radius:12px; font-size:13.5px; font-weight:600; color:{{ fg.budget }}; background:{{ bg.budget }}" style-hover="background:var(--fl-mint-soft)">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" style="flex:0 0 auto"><rect x="3" y="5" width="18" height="14" rx="2.5"></rect><path d="M3 10h18"></path><circle cx="16.5" cy="14.5" r="1.3"></circle></svg>
+          <span style="{{ labelStyle }}">Budget</span>
+        </a>
+        <a href="#" onClick="{{ go.investments }}" style="display:flex; align-items:center; gap:11px; padding:10px 12px; border-radius:12px; font-size:13.5px; font-weight:600; color:{{ fg.investments }}; background:{{ bg.investments }}" style-hover="background:var(--fl-mint-soft)">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:0 0 auto"><polyline points="3 17 9.5 10.5 14 15 21 7"></polyline><polyline points="15 7 21 7 21 13"></polyline></svg>
+          <span style="{{ labelStyle }}">Investments</span>
+        </a>
+        <a href="#" onClick="{{ go.calendar }}" style="display:flex; align-items:center; gap:11px; padding:10px 12px; border-radius:12px; font-size:13.5px; font-weight:600; color:{{ fg.calendar }}; background:{{ bg.calendar }}" style-hover="background:var(--fl-mint-soft)">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex:0 0 auto"><rect x="3" y="5" width="18" height="16" rx="2.5"></rect><line x1="3" y1="10" x2="21" y2="10"></line><line x1="8" y1="3" x2="8" y2="7"></line><line x1="16" y1="3" x2="16" y2="7"></line></svg>
+          <span style="{{ labelStyle }}">Cash-Flow Calendar</span>
+        </a>
+      </div>
+    </div>
+
+    <div>
+      <div style="{{ labelStyle }} font-size:10px; font-weight:700; letter-spacing:0.14em; text-transform:uppercase; color:var(--fl-muted); padding:0 10px 8px">General</div>
+      <div style="display:flex; flex-direction:column; gap:2px">
+        <a href="#" onClick="{{ go.accounts }}" style="display:flex; align-items:center; gap:11px; padding:10px 12px; border-radius:12px; font-size:13.5px; font-weight:600; color:{{ fg.accounts }}; background:{{ bg.accounts }}" style-hover="background:var(--fl-mint-soft)">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="flex:0 0 auto"><line x1="3" y1="21" x2="21" y2="21"></line><line x1="6" y1="18" x2="6" y2="11"></line><line x1="12" y1="18" x2="12" y2="11"></line><line x1="18" y1="18" x2="18" y2="11"></line><polygon points="12 3 20 8 4 8"></polygon></svg>
+          <span style="{{ labelStyle }}">Accounts</span>
+        </a>
+        <a href="#" onClick="{{ go.emergency }}" style="display:flex; align-items:center; gap:11px; padding:10px 12px; border-radius:12px; font-size:13.5px; font-weight:600; color:{{ fg.emergency }}; background:{{ bg.emergency }}" style-hover="background:var(--fl-mint-soft)">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" style="flex:0 0 auto"><path d="M12 21s7.5-3.7 7.5-9.3V5.2L12 2.5 4.5 5.2v6.5C4.5 17.3 12 21 12 21z"></path><path d="m9 12 2 2 4-4"></path></svg>
+          <span style="{{ labelStyle }}">Emergency Fund</span>
+        </a>
+        <a href="#" onClick="{{ go.settings }}" style="display:flex; align-items:center; gap:11px; padding:10px 12px; border-radius:12px; font-size:13.5px; font-weight:600; color:{{ fg.settings }}; background:{{ bg.settings }}" style-hover="background:var(--fl-mint-soft)">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex:0 0 auto"><circle cx="12" cy="12" r="3"></circle><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"></path></svg>
+          <span style="{{ labelStyle }}">Settings</span>
+        </a>
+      </div>
+    </div>
+
+    <div style="{{ labelStyle }} margin-top:auto; background:var(--fl-green-deep); border-radius:18px; padding:18px; color:#fff; position:relative; overflow:hidden">
+      <div style="position:absolute; right:-30px; top:-30px; width:110px; height:110px; border-radius:50%; background:rgba(191,228,207,0.14)"></div>
+      <div style="font-size:10px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:var(--fl-mint)">Debt-free target</div>
+      <div style="font-size:17px; font-weight:800; letter-spacing:-0.02em; margin-top:8px; line-height:1.25">{{ heroTargetDate }}</div>
+      <div style="font-size:11.5px; font-weight:500; color:rgba(255,255,255,0.72); margin-top:4px">{{ heroTargetSub }}</div>
+      <button onClick="{{ go.debt }}" style="margin-top:14px; width:100%; border:0; border-radius:999px; background:var(--fl-mint); color:var(--fl-green-deep); font-size:12px; font-weight:800; padding:10px 12px; cursor:pointer" style-hover="background:#fff">Open planner</button>
+    </div>
+  </aside>
+
+  <main style="flex:1 1 auto; min-width:0; display:flex; flex-direction:column">
+
+    <div style="display:flex; align-items:center; gap:14px; padding:16px 24px; border-bottom:1px solid var(--fl-line); flex-wrap:wrap">
+      <label for="fl2-search" style="display:flex; align-items:center; gap:9px; flex:1 1 240px; min-width:0; background:#f4f6f5; border-radius:999px; padding:10px 16px">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--fl-muted)" stroke-width="2" stroke-linecap="round" style="flex:0 0 auto"><circle cx="11" cy="11" r="7"></circle><line x1="16.5" y1="16.5" x2="21" y2="21"></line></svg>
+        <input id="fl2-search" type="text" placeholder="Search transactions, loans, categories…" value="{{ tx.q }}" onChange="{{ setQ }}" onInput="{{ searchFromTop }}" style="flex:1 1 auto; min-width:0; border:0; background:transparent; font-size:13px; font-weight:500; outline:none; color:var(--fl-ink)">
+      </label>
+      <div style="display:flex; align-items:center; gap:6px; background:#f4f6f5; border-radius:999px; padding:4px">
+        <button onClick="{{ prevMonth }}" style="width:28px; height:28px; border:0; border-radius:50%; background:transparent; cursor:pointer; font-size:15px; font-weight:700; color:var(--fl-ink)" style-hover="background:#fff">‹</button>
+        <span style="font-size:12.5px; font-weight:700; min-width:78px; text-align:center">{{ monthLabel }}</span>
+        <button onClick="{{ nextMonth }}" style="width:28px; height:28px; border:0; border-radius:50%; background:transparent; cursor:pointer; font-size:15px; font-weight:700; color:var(--fl-ink)" style-hover="background:#fff">›</button>
+      </div>
+      <div style="display:flex; gap:4px; background:#f4f6f5; border-radius:999px; padding:4px">
+        <button onClick="{{ setSample }}" style="border:0; border-radius:999px; padding:7px 13px; cursor:pointer; font-size:11.5px; font-weight:700; background:{{ seg.sampleBg }}; color:{{ seg.sampleFg }}">Sample</button>
+        <button onClick="{{ setEmpty }}" style="border:0; border-radius:999px; padding:7px 13px; cursor:pointer; font-size:11.5px; font-weight:700; background:{{ seg.emptyBg }}; color:{{ seg.emptyFg }}">Empty</button>
+      </div>
+      <div style="display:flex; align-items:center; gap:10px">
+        <div style="width:38px; height:38px; border-radius:50%; background:var(--fl-green-dark); color:#fff; display:grid; place-items:center; font-size:12.5px; font-weight:800">SM</div>
+        <div style="{{ labelStyle }}">
+          <div style="font-size:13px; font-weight:700; line-height:1.2">Shivam Mehta</div>
+          <div style="font-size:11px; font-weight:500; color:var(--fl-muted)">INR · en-IN</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="flex:1 1 auto; padding:22px 24px 28px; display:flex; flex-direction:column; gap:16px; background:#fbfcfb">
+
+      <div style="display:flex; align-items:flex-end; gap:16px; flex-wrap:wrap">
+        <div style="flex:1 1 260px; min-width:0">
+          <h1 style="margin:0; font-size:30px; font-weight:800; letter-spacing:-0.035em">{{ screenTitle }}</h1>
+          <p style="margin:4px 0 0; font-size:13.5px; font-weight:500; color:var(--fl-muted); text-wrap:pretty">{{ screenSub }}</p>
+        </div>
+        <div style="display:flex; gap:9px; flex-wrap:wrap">
+          <button onClick="{{ openExpense }}" style="display:flex; align-items:center; gap:8px; border:0; border-radius:999px; background:var(--fl-green); color:#fff; font-size:13px; font-weight:700; padding:12px 20px; cursor:pointer" style-hover="background:var(--fl-green-dark)">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            Add expense
+          </button>
+          <button onClick="{{ openIncome }}" style="border:1.5px solid var(--fl-line); border-radius:999px; background:#fff; color:var(--fl-ink); font-size:13px; font-weight:700; padding:12px 20px; cursor:pointer" style-hover="border-color:var(--fl-green); color:var(--fl-green-dark)">Add income</button>
+        </div>
+      </div>
+
+      <sc-if value="{{ isEmpty }}">
+        <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap; background:var(--fl-mint-soft); border:1px solid var(--fl-mint); border-radius:18px; padding:16px 20px">
+          <div style="flex:1 1 300px; min-width:0">
+            <div style="font-size:15px; font-weight:800; letter-spacing:-0.02em">New here?</div>
+            <div style="font-size:13px; font-weight:500; color:var(--fl-muted); margin-top:2px">Load sample data to see how the dashboard, budget and debt planner work together.</div>
+          </div>
+          <button onClick="{{ setSample }}" style="border:0; border-radius:999px; background:var(--fl-green); color:#fff; font-size:12.5px; font-weight:700; padding:11px 18px; cursor:pointer" style-hover="background:var(--fl-green-dark)">Use sample data</button>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isDashboard }}" hint-placeholder-val="{{ true }}">
+      <div style="display:flex; flex-direction:column; gap:16px">
+
+        <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:14px">
+          <sc-for list="{{ headline }}" as="h" hint-placeholder-count="4">
+            <div style="border-radius:20px; padding:20px; background:{{ h.cardBg }}; border:1px solid {{ h.cardBorder }}; min-width:0">
+              <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:10px">
+                <span style="font-size:13px; font-weight:700; color:{{ h.labelColor }}">{{ h.label }}</span>
+                <button onClick="{{ h.click }}" style="flex:0 0 auto; width:26px; height:26px; border-radius:50%; border:1.5px solid {{ h.arrowBorder }}; background:transparent; color:{{ h.arrowColor }}; display:grid; place-items:center; cursor:pointer" style-hover="background:rgba(26,127,75,0.10)">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="9 7 17 7 17 15"></polyline></svg>
+                </button>
+              </div>
+              <div style="font-size:30px; font-weight:800; letter-spacing:-0.035em; margin-top:16px; font-variant-numeric:tabular-nums; color:{{ h.valueColor }}">{{ h.value }}</div>
+              <div style="display:flex; align-items:center; gap:7px; margin-top:10px">
+                <span style="font-size:11px; font-weight:700; padding:3px 8px; border-radius:999px; background:{{ h.pillBg }}; color:{{ h.pillFg }}">{{ h.pill }}</span>
+                <span style="font-size:11.5px; font-weight:500; color:{{ h.subColor }}">{{ h.sub }}</span>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:14px; align-items:start">
+
+          <div style="grid-column:span 2; min-width:0; background:#fff; border:1px solid var(--fl-line); border-radius:20px; padding:20px">
+            <div style="display:flex; align-items:baseline; justify-content:space-between; gap:12px; flex-wrap:wrap">
+              <div>
+                <h2 style="margin:0; font-size:16px; font-weight:800; letter-spacing:-0.02em">Cash flow</h2>
+                <p style="margin:3px 0 0; font-size:12px; font-weight:500; color:var(--fl-muted)">Six months of money in and out. Hover a month for detail.</p>
+              </div>
+              <div style="display:flex; gap:14px; font-size:11.5px; font-weight:700">
+                <span style="display:flex; align-items:center; gap:6px"><span style="width:10px; height:10px; border-radius:3px; background:var(--fl-green)"></span>Income</span>
+                <span style="display:flex; align-items:center; gap:6px"><span style="width:10px; height:10px; border-radius:3px; background:var(--fl-red)"></span>Expenses</span>
+              </div>
+            </div>
+            <div style="display:flex; align-items:flex-end; gap:6px; height:196px; margin-top:22px">
+              <sc-for list="{{ bars }}" as="b" hint-placeholder-count="6">
+                <div onMouseEnter="{{ b.enter }}" onMouseLeave="{{ b.leave }}" onClick="{{ b.select }}" style="flex:1 1 0; min-width:0; height:100%; display:flex; align-items:flex-end; justify-content:center; gap:5px; position:relative; cursor:pointer; border-radius:14px; background:{{ b.hoverBg }}">
+                  <div style="width:26%; height:{{ b.incH }}; border-radius:999px; background:{{ b.incFill }}"></div>
+                  <div style="width:26%; height:{{ b.expH }}; border-radius:999px; background:{{ b.expFill }}"></div>
+                  <sc-if value="{{ b.active }}">
+                    <div style="position:absolute; left:50%; bottom:100%; transform:translate(-50%,-6px); background:var(--fl-green-deep); color:#fff; border-radius:14px; padding:10px 12px; min-width:154px; z-index:6; pointer-events:none; box-shadow:0 10px 24px rgba(8,51,34,0.28)">
+                      <div style="font-size:11px; font-weight:800; letter-spacing:0.02em; color:var(--fl-mint)">{{ b.label }}</div>
+                      <div style="font-size:12px; font-weight:600; margin-top:6px; font-variant-numeric:tabular-nums">In {{ b.inc }}</div>
+                      <div style="font-size:12px; font-weight:600; font-variant-numeric:tabular-nums; color:#ffc4bd">Out {{ b.exp }}</div>
+                      <div style="font-size:12px; font-weight:800; margin-top:6px; padding-top:6px; border-top:1px solid rgba(255,255,255,0.18); font-variant-numeric:tabular-nums">Net {{ b.net }}</div>
+                    </div>
+                  </sc-if>
+                </div>
+              </sc-for>
+            </div>
+            <div style="display:flex; gap:6px; margin-top:10px">
+              <sc-for list="{{ bars }}" as="b" hint-placeholder-count="6">
+                <div style="flex:1 1 0; text-align:center; font-size:11.5px; font-weight:700; color:{{ b.labelColor }}">{{ b.short }}</div>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="min-width:0; background:#fff; border:1px solid var(--fl-line); border-radius:20px; padding:20px; display:flex; flex-direction:column; gap:14px">
+            <div style="display:flex; align-items:baseline; justify-content:space-between; gap:10px">
+              <h2 style="margin:0; font-size:16px; font-weight:800; letter-spacing:-0.02em">Upcoming</h2>
+              <span style="font-size:11.5px; font-weight:600; color:var(--fl-muted)">Next 30 days</span>
+            </div>
+            <sc-if value="{{ hasUpcoming }}" hint-placeholder-val="{{ true }}">
+              <div style="display:flex; flex-direction:column; gap:10px">
+                <div style="background:var(--fl-mint-soft); border-radius:16px; padding:14px 16px">
+                  <div style="font-size:11px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--fl-green-dark)">Due first</div>
+                  <div style="font-size:16px; font-weight:800; letter-spacing:-0.02em; margin-top:6px; line-height:1.3">{{ nextUp.label }}</div>
+                  <div style="font-size:12px; font-weight:500; color:var(--fl-muted); margin-top:3px">{{ nextUp.when }} · {{ nextUp.kind }}</div>
+                  <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:12px">
+                    <span style="font-size:20px; font-weight:800; letter-spacing:-0.03em; font-variant-numeric:tabular-nums">{{ nextUp.amt }}</span>
+                    <button onClick="{{ go.calendar }}" style="border:0; border-radius:999px; background:var(--fl-green); color:#fff; font-size:12px; font-weight:700; padding:9px 14px; cursor:pointer" style-hover="background:var(--fl-green-dark)">Calendar</button>
+                  </div>
+                </div>
+                <sc-for list="{{ upcomingRest }}" as="u" hint-placeholder-count="3">
+                  <div style="display:flex; align-items:center; gap:12px">
+                    <div style="flex:0 0 auto; width:38px; height:38px; border-radius:12px; background:#f4f6f5; display:grid; place-items:center; text-align:center">
+                      <div>
+                        <div style="font-size:12px; font-weight:800; line-height:1">{{ u.day }}</div>
+                        <div style="font-size:8.5px; font-weight:700; color:var(--fl-muted); letter-spacing:0.06em">{{ u.mon }}</div>
+                      </div>
+                    </div>
+                    <div style="flex:1 1 auto; min-width:0">
+                      <div style="font-size:13px; font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap">{{ u.label }}</div>
+                      <div style="font-size:11px; font-weight:500; color:var(--fl-muted)">{{ u.kind }}</div>
+                    </div>
+                    <div style="flex:0 0 auto; font-size:13px; font-weight:800; font-variant-numeric:tabular-nums">{{ u.amt }}</div>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+            <sc-if value="{{ isEmpty }}">
+              <p style="margin:0; font-size:13px; font-weight:500; color:var(--fl-muted)">Nothing scheduled right now.</p>
+            </sc-if>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:14px; align-items:start">
+
+          <div style="min-width:0; background:#fff; border:1px solid var(--fl-line); border-radius:20px; padding:20px">
+            <h2 style="margin:0; font-size:16px; font-weight:800; letter-spacing:-0.02em">Debt cleared</h2>
+            <p style="margin:3px 0 0; font-size:12px; font-weight:500; color:var(--fl-muted)">Of the {{ debtOriginal }} you originally borrowed.</p>
+            <div style="display:flex; justify-content:center; margin-top:10px">
+              <div style="position:relative; width:100%; max-width:260px">
+                <svg viewBox="0 0 220 132" style="width:100%; height:auto; display:block; overflow:visible">
+                  <path d="M20 120 A90 90 0 0 1 200 120" fill="none" stroke="#eef1ef" stroke-width="26" stroke-linecap="round"></path>
+                  <path d="M20 120 A90 90 0 0 1 200 120" fill="none" stroke="var(--fl-green)" stroke-width="26" stroke-linecap="round" stroke-dasharray="{{ gauge.dash }}"></path>
+                </svg>
+                <div style="position:absolute; left:0; right:0; bottom:4%; text-align:center; pointer-events:none">
+                  <div style="font-size:36px; font-weight:800; letter-spacing:-0.04em; line-height:1; font-variant-numeric:tabular-nums">{{ gauge.pct }}</div>
+                  <div style="font-size:12px; font-weight:600; color:var(--fl-muted); margin-top:5px">Principal repaid</div>
+                </div>
+              </div>
+            </div>
+            <div style="display:flex; gap:16px; justify-content:center; margin-top:8px; font-size:11.5px; font-weight:700; flex-wrap:wrap">
+              <span style="display:flex; align-items:center; gap:6px"><span style="width:9px; height:9px; border-radius:50%; background:var(--fl-green)"></span>Cleared {{ gauge.cleared }}</span>
+              <span style="display:flex; align-items:center; gap:6px"><span style="width:9px; height:9px; border-radius:50%; background:#dfe3e0"></span>Left {{ gauge.left }}</span>
+            </div>
+          </div>
+
+          <div style="min-width:0; background:var(--fl-green-deep); border-radius:20px; padding:22px; color:#fff; position:relative; overflow:hidden">
+            <div style="position:absolute; right:-40px; bottom:-50px; width:180px; height:180px; border-radius:50%; background:rgba(191,228,207,0.10)"></div>
+            <div style="font-size:13px; font-weight:700; color:var(--fl-mint)">Debt-free countdown</div>
+            <div style="font-size:44px; font-weight:800; letter-spacing:-0.04em; margin-top:14px; font-variant-numeric:tabular-nums">{{ countdown.months }}</div>
+            <div style="font-size:12.5px; font-weight:500; color:rgba(255,255,255,0.74)">months left · {{ countdown.date }}</div>
+            <div style="height:1px; background:rgba(255,255,255,0.16); margin:18px 0 14px"></div>
+            <div style="display:flex; justify-content:space-between; gap:10px; font-size:12px; font-weight:600; color:rgba(255,255,255,0.78)">
+              <span>Extra per month</span><span style="font-weight:800; color:#fff; font-variant-numeric:tabular-nums">{{ countdown.extra }}</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; gap:10px; font-size:12px; font-weight:600; color:rgba(255,255,255,0.78); margin-top:6px">
+              <span>Interest saved</span><span style="font-weight:800; color:var(--fl-mint); font-variant-numeric:tabular-nums">{{ countdown.saved }}</span>
+            </div>
+            <button onClick="{{ go.debt }}" style="margin-top:18px; border:0; border-radius:999px; background:var(--fl-mint); color:var(--fl-green-deep); font-size:12.5px; font-weight:800; padding:11px 18px; cursor:pointer" style-hover="background:#fff">Run a scenario</button>
+          </div>
+
+          <div style="min-width:0; background:#fff; border:1px solid var(--fl-line); border-radius:20px; padding:20px">
+            <div style="display:flex; align-items:baseline; justify-content:space-between; gap:10px; flex-wrap:wrap">
+              <h2 style="margin:0; font-size:16px; font-weight:800; letter-spacing:-0.02em">Where it went</h2>
+              <span style="font-size:11.5px; font-weight:600; color:var(--fl-muted)">Tap to drill down</span>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:2px; margin-top:12px">
+              <sc-for list="{{ cats }}" as="c" hint-placeholder-count="7">
+                <div onClick="{{ c.click }}" style="padding:9px 10px; border-radius:12px; cursor:pointer; background:{{ c.rowBg }}" style-hover="background:#f4f6f5">
+                  <div style="display:flex; align-items:baseline; gap:10px">
+                    <span style="flex:1 1 auto; min-width:0; font-size:12.5px; font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap">{{ c.name }}</span>
+                    <span style="font-size:11px; font-weight:600; color:var(--fl-muted); font-variant-numeric:tabular-nums">{{ c.pct }}</span>
+                    <span style="font-size:12.5px; font-weight:800; font-variant-numeric:tabular-nums">{{ c.amt }}</span>
+                  </div>
+                  <div style="height:7px; border-radius:999px; background:#eef1ef; margin-top:7px; overflow:hidden">
+                    <div style="height:7px; width:{{ c.w }}; border-radius:999px; background:{{ c.color }}"></div>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+            <sc-if value="{{ isEmpty }}">
+              <p style="margin:10px 0 0; font-size:13px; font-weight:500; color:var(--fl-muted)">No expenses recorded for {{ monthLabel }}.</p>
+            </sc-if>
+            <sc-if value="{{ hasDrill }}">
+              <div style="margin-top:14px; background:#f7f9f8; border-radius:16px; padding:14px">
+                <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:10px">
+                  <div style="min-width:0">
+                    <div style="font-size:13.5px; font-weight:800; letter-spacing:-0.01em">{{ drill.name }}</div>
+                    <div style="font-size:11.5px; font-weight:500; color:var(--fl-muted); margin-top:2px">{{ drill.meta }}</div>
+                  </div>
+                  <button onClick="{{ clearDrill }}" style="flex:0 0 auto; width:24px; height:24px; border-radius:50%; border:0; background:#e7eae8; cursor:pointer; font-size:12px; font-weight:700; color:var(--fl-muted)" style-hover="background:var(--fl-mint)">✕</button>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:8px; margin-top:12px">
+                  <sc-for list="{{ drill.items }}" as="t" hint-placeholder-count="3">
+                    <div style="display:flex; align-items:baseline; gap:10px">
+                      <span style="flex:0 0 44px; font-size:11px; font-weight:700; color:var(--fl-muted)">{{ t.date }}</span>
+                      <span style="flex:1 1 auto; min-width:0; font-size:12.5px; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap">{{ t.desc }}</span>
+                      <span style="flex:0 0 auto; font-size:12.5px; font-weight:800; font-variant-numeric:tabular-nums">{{ t.amt }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+                <button onClick="{{ drill.seeAll }}" style="margin-top:12px; border:0; border-radius:999px; background:var(--fl-green); color:#fff; font-size:12px; font-weight:700; padding:9px 15px; cursor:pointer" style-hover="background:var(--fl-green-dark)">See all in transactions</button>
+              </div>
+            </sc-if>
+          </div>
+        </div>
+
+        <div style="background:#fff; border:1px solid var(--fl-line); border-radius:20px; padding:20px">
+          <div style="display:flex; align-items:baseline; justify-content:space-between; gap:12px; flex-wrap:wrap">
+            <h2 style="margin:0; font-size:16px; font-weight:800; letter-spacing:-0.02em">Latest activity</h2>
+            <button onClick="{{ go.transactions }}" style="border:1.5px solid var(--fl-line); border-radius:999px; background:#fff; font-size:12px; font-weight:700; padding:8px 14px; cursor:pointer; color:var(--fl-ink)" style-hover="border-color:var(--fl-green); color:var(--fl-green-dark)">View all</button>
+          </div>
+          <div style="display:flex; flex-direction:column; margin-top:8px">
+            <sc-for list="{{ recent }}" as="t" hint-placeholder-count="5">
+              <div style="display:flex; align-items:center; gap:12px; padding:11px 0; border-bottom:1px solid var(--fl-line)">
+                <div style="flex:0 0 auto; width:34px; height:34px; border-radius:11px; background:{{ t.dotBg }}; color:{{ t.dotFg }}; display:grid; place-items:center; font-size:14px; font-weight:800">{{ t.sign }}</div>
+                <div style="flex:1 1 auto; min-width:0">
+                  <div style="font-size:13px; font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap">{{ t.desc }}</div>
+                  <div style="font-size:11px; font-weight:500; color:var(--fl-muted)">{{ t.meta }}</div>
+                </div>
+                <div style="flex:0 0 auto; font-size:13.5px; font-weight:800; font-variant-numeric:tabular-nums; color:{{ t.color }}">{{ t.signed }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ isDebt }}">
+      <div style="display:flex; flex-direction:column; gap:16px">
+        <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:14px">
+          <sc-for list="{{ plan.headline }}" as="h" hint-placeholder-count="4">
+            <div style="border-radius:20px; padding:20px; background:{{ h.cardBg }}; border:1px solid {{ h.cardBorder }}; min-width:0">
+              <div style="font-size:13px; font-weight:700; color:{{ h.labelColor }}">{{ h.label }}</div>
+              <div style="font-size:27px; font-weight:800; letter-spacing:-0.035em; margin-top:14px; font-variant-numeric:tabular-nums; color:{{ h.valueColor }}">{{ h.value }}</div>
+              <div style="font-size:11.5px; font-weight:500; color:{{ h.subColor }}; margin-top:8px">{{ h.sub }}</div>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:14px; align-items:start">
+          <div style="min-width:0; background:#fff; border:1px solid var(--fl-line); border-radius:20px; padding:20px">
+            <h2 style="margin:0; font-size:16px; font-weight:800; letter-spacing:-0.02em">Scenario</h2>
+            <div style="font-size:12px; font-weight:600; color:var(--fl-muted); margin-top:12px">Extra towards debt each month</div>
+            <div style="font-size:36px; font-weight:800; letter-spacing:-0.04em; margin:4px 0 2px; font-variant-numeric:tabular-nums; color:var(--fl-green-dark)">{{ plan.extraLabel }}</div>
+            <input type="range" min="0" max="30000" step="500" value="{{ plan.extra }}" onChange="{{ setExtra }}" onInput="{{ setExtra }}" style="width:100%; margin:12px 0 4px">
+            <div style="display:flex; justify-content:space-between; font-size:11px; font-weight:600; color:var(--fl-muted); font-variant-numeric:tabular-nums"><span>₹0</span><span>₹30,000</span></div>
+            <div style="font-size:12px; font-weight:500; color:var(--fl-muted); margin-top:12px">Free cash after EMIs and SIPs: {{ plan.freeCash }}</div>
+            <div style="height:1px; background:var(--fl-line); margin:18px 0 14px"></div>
+            <div style="font-size:12px; font-weight:600; color:var(--fl-muted); margin-bottom:8px">Payoff order</div>
+            <div style="display:flex; gap:4px; background:#f4f6f5; border-radius:999px; padding:4px; width:fit-content">
+              <button onClick="{{ setAvalanche }}" style="border:0; border-radius:999px; padding:9px 16px; cursor:pointer; font-size:12px; font-weight:700; background:{{ plan.avaBg }}; color:{{ plan.avaFg }}">Avalanche</button>
+              <button onClick="{{ setSnowball }}" style="border:0; border-radius:999px; padding:9px 16px; cursor:pointer; font-size:12px; font-weight:700; background:{{ plan.snowBg }}; color:{{ plan.snowFg }}">Snowball</button>
+            </div>
+            <p style="margin:12px 0 0; font-size:12px; font-weight:500; color:var(--fl-muted); text-wrap:pretty">{{ plan.strategyNote }}</p>
+          </div>
+
+          <div style="grid-column:span 2; min-width:0; background:#fff; border:1px solid var(--fl-line); border-radius:20px; padding:20px">
+            <h2 style="margin:0; font-size:16px; font-weight:800; letter-spacing:-0.02em">Total balance over time</h2>
+            <svg viewBox="0 0 100 46" preserveAspectRatio="none" style="width:100%; height:214px; display:block; margin-top:16px">
+              <polyline points="{{ plan.basePoints }}" fill="none" stroke="#c8cfcb" stroke-width="2" stroke-dasharray="4 3" vector-effect="non-scaling-stroke"></polyline>
+              <polyline points="{{ plan.accPoints }}" fill="none" stroke="var(--fl-green)" stroke-width="3" stroke-linecap="round" vector-effect="non-scaling-stroke"></polyline>
+            </svg>
+            <div style="display:flex; justify-content:space-between; font-size:11.5px; font-weight:600; color:var(--fl-muted); margin-top:8px"><span>Today</span><span>{{ plan.axisEnd }}</span></div>
+            <div style="display:flex; gap:18px; margin-top:12px; font-size:11.5px; font-weight:700; flex-wrap:wrap">
+              <span style="display:flex; align-items:center; gap:7px"><span style="width:18px; height:2px; background:#c8cfcb"></span>Minimum EMIs only</span>
+              <span style="display:flex; align-items:center; gap:7px"><span style="width:18px; height:3px; border-radius:2px; background:var(--fl-green)"></span>With extra {{ plan.extraLabel }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="background:#fff; border:1px solid var(--fl-line); border-radius:20px; padding:20px">
+          <h2 style="margin:0 0 14px; font-size:16px; font-weight:800; letter-spacing:-0.02em">Loans — {{ plan.orderLabel }}</h2>
+          <div style="display:flex; flex-direction:column">
+            <sc-for list="{{ plan.loans }}" as="l" hint-placeholder-count="4">
+              <div style="display:flex; align-items:center; gap:14px; padding:13px 0; border-bottom:1px solid var(--fl-line); flex-wrap:wrap">
+                <div style="flex:0 0 auto; width:30px; height:30px; border-radius:10px; background:{{ l.rankBg }}; color:{{ l.rankFg }}; display:grid; place-items:center; font-size:12.5px; font-weight:800">{{ l.rank }}</div>
+                <div style="flex:2 1 200px; min-width:0">
+                  <div style="font-size:13.5px; font-weight:700">{{ l.name }}</div>
+                  <div style="height:7px; border-radius:999px; background:#eef1ef; margin-top:7px; max-width:280px; overflow:hidden"><div style="height:7px; width:{{ l.w }}; border-radius:999px; background:{{ l.color }}"></div></div>
+                </div>
+                <div style="flex:0 0 auto; min-width:96px; text-align:right"><div style="font-size:10.5px; font-weight:600; color:var(--fl-muted)">Outstanding</div><div style="font-size:13.5px; font-weight:800; font-variant-numeric:tabular-nums">{{ l.bal }}</div></div>
+                <div style="flex:0 0 auto; min-width:62px; text-align:right"><div style="font-size:10.5px; font-weight:600; color:var(--fl-muted)">Rate</div><div style="font-size:13.5px; font-weight:700; font-variant-numeric:tabular-nums">{{ l.rate }}</div></div>
+                <div style="flex:0 0 auto; min-width:86px; text-align:right"><div style="font-size:10.5px; font-weight:600; color:var(--fl-muted)">EMI</div><div style="font-size:13.5px; font-weight:700; font-variant-numeric:tabular-nums">{{ l.emi }}</div></div>
+                <div style="flex:0 0 auto; min-width:96px; text-align:right"><div style="font-size:10.5px; font-weight:600; color:var(--fl-muted)">Paid off</div><div style="font-size:13.5px; font-weight:800; color:var(--fl-green-dark)">{{ l.payoff }}</div></div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ isTx }}">
+      <div style="display:flex; flex-direction:column; gap:14px">
+        <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center">
+          <select value="{{ tx.type }}" onChange="{{ setType }}" style="border:1.5px solid var(--fl-line); border-radius:999px; background:#fff; font-size:12.5px; font-weight:700; padding:11px 16px; cursor:pointer; color:var(--fl-ink)">
+            <option>All types</option><option>Expense</option><option>Income</option>
+          </select>
+          <select value="{{ tx.cat }}" onChange="{{ setCat }}" style="border:1.5px solid var(--fl-line); border-radius:999px; background:#fff; font-size:12.5px; font-weight:700; padding:11px 16px; cursor:pointer; color:var(--fl-ink)">
+            <sc-for list="{{ tx.catOptions }}" as="o" hint-placeholder-count="6"><option>{{ o }}</option></sc-for>
+          </select>
+          <div style="display:flex; gap:4px; background:#f4f6f5; border-radius:999px; padding:4px">
+            <button onClick="{{ scopeMonth }}" style="border:0; border-radius:999px; padding:8px 14px; cursor:pointer; font-size:12px; font-weight:700; background:{{ tx.monthBg }}; color:{{ tx.monthFg }}">{{ monthLabel }}</button>
+            <button onClick="{{ scopeAll }}" style="border:0; border-radius:999px; padding:8px 14px; cursor:pointer; font-size:12px; font-weight:700; background:{{ tx.allBg }}; color:{{ tx.allFg }}">All months</button>
+          </div>
+          <span style="font-size:12px; font-weight:600; color:var(--fl-muted)">Search from the bar above</span>
+        </div>
+
+        <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:14px">
+          <sc-for list="{{ tx.stats }}" as="s" hint-placeholder-count="3">
+            <div style="background:#fff; border:1px solid var(--fl-line); border-radius:20px; padding:18px 20px">
+              <div style="font-size:12.5px; font-weight:700; color:var(--fl-muted)">{{ s.label }}</div>
+              <div style="font-size:24px; font-weight:800; letter-spacing:-0.03em; margin-top:8px; font-variant-numeric:tabular-nums; color:{{ s.color }}">{{ s.value }}</div>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="background:#fff; border:1px solid var(--fl-line); border-radius:20px; padding:8px 20px 14px">
+          <div style="display:flex; flex-direction:column">
+            <sc-for list="{{ tx.rows }}" as="t" hint-placeholder-count="10">
+              <div style="display:flex; align-items:center; gap:12px; padding:12px 0; border-bottom:1px solid var(--fl-line); flex-wrap:wrap">
+                <div style="flex:0 0 auto; width:34px; height:34px; border-radius:11px; background:{{ t.dotBg }}; color:{{ t.dotFg }}; display:grid; place-items:center; font-size:14px; font-weight:800">{{ t.sign }}</div>
+                <div style="flex:2 1 180px; min-width:0">
+                  <div style="font-size:13.5px; font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap">{{ t.desc }}</div>
+                  <div style="font-size:11px; font-weight:500; color:var(--fl-muted)">{{ t.date }} · {{ t.method }}</div>
+                </div>
+                <span style="flex:0 0 auto; font-size:11.5px; font-weight:700; padding:5px 11px; border-radius:999px; background:#f4f6f5; color:var(--fl-muted)">{{ t.cat }}</span>
+                <div style="flex:0 0 auto; min-width:96px; text-align:right; font-size:14px; font-weight:800; font-variant-numeric:tabular-nums; color:{{ t.color }}">{{ t.signed }}</div>
+              </div>
+            </sc-for>
+          </div>
+          <sc-if value="{{ tx.none }}">
+            <p style="margin:0; font-size:13px; font-weight:500; color:var(--fl-muted); padding:22px 0">No transactions match these filters.</p>
+          </sc-if>
+        </div>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ isStub }}">
+        <div style="background:#fff; border:1px solid var(--fl-line); border-radius:20px; padding:40px; max-width:56ch">
+          <div style="font-size:11px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:var(--fl-green-dark)">Not in this prototype</div>
+          <p style="margin:12px 0 20px; font-size:15px; font-weight:500; color:var(--fl-muted); text-wrap:pretty">This design covers the dashboard, the debt planner and transactions. The rest of the navigation is live so you can feel the shell.</p>
+          <button onClick="{{ go.dashboard }}" style="border:0; border-radius:999px; background:var(--fl-green); color:#fff; font-size:13px; font-weight:700; padding:12px 20px; cursor:pointer" style-hover="background:var(--fl-green-dark)">Back to dashboard</button>
+        </div>
+      </sc-if>
+    </div>
+  </main>
+
+  <sc-if value="{{ sheetOpen }}">
+    <div onClick="{{ closeSheet }}" style="position:fixed; inset:0; background:rgba(15,21,18,0.42); z-index:40"></div>
+  </sc-if>
+  <sc-if value="{{ sheetOpen }}">
+    <div style="position:fixed; top:16px; right:16px; bottom:16px; width:min(410px,calc(100% - 32px)); background:#fff; border-radius:24px; z-index:41; display:flex; flex-direction:column; box-shadow:0 24px 60px rgba(15,21,18,0.28); overflow:hidden">
+      <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:12px; padding:22px 22px 16px">
+        <div>
+          <div style="font-size:11.5px; font-weight:700; color:var(--fl-green-dark)">{{ monthLabel }}</div>
+          <h2 style="margin:5px 0 0; font-size:21px; font-weight:800; letter-spacing:-0.03em">{{ sheet.title }}</h2>
+        </div>
+        <button onClick="{{ closeSheet }}" style="flex:0 0 auto; width:32px; height:32px; border-radius:50%; border:0; background:#f4f6f5; cursor:pointer; font-size:13px; font-weight:700; color:var(--fl-muted)" style-hover="background:var(--fl-mint)">✕</button>
+      </div>
+      <div style="display:flex; gap:4px; background:#f4f6f5; border-radius:999px; padding:4px; margin:0 22px">
+        <button onClick="{{ openExpense }}" style="flex:1 1 0; border:0; border-radius:999px; padding:10px; cursor:pointer; font-size:12.5px; font-weight:700; background:{{ sheet.expBg }}; color:{{ sheet.expFg }}">Expense</button>
+        <button onClick="{{ openIncome }}" style="flex:1 1 0; border:0; border-radius:999px; padding:10px; cursor:pointer; font-size:12.5px; font-weight:700; background:{{ sheet.incBg }}; color:{{ sheet.incFg }}">Income</button>
+      </div>
+      <div style="flex:1 1 auto; overflow-y:auto; padding:20px 22px; display:flex; flex-direction:column; gap:14px">
+        <div>
+          <label for="fl2-amt" style="display:block; font-size:11.5px; font-weight:700; color:var(--fl-muted); margin-bottom:6px">Amount (₹)</label>
+          <input id="fl2-amt" type="number" min="0" step="1" placeholder="0" ref="{{ refAmount }}" style="width:100%; border:1.5px solid var(--fl-line); border-radius:14px; padding:13px 14px; font-size:15px; font-weight:700; outline:none; color:var(--fl-ink)" style-focus="border-color:var(--fl-green)">
+        </div>
+        <div>
+          <label for="fl2-desc" style="display:block; font-size:11.5px; font-weight:700; color:var(--fl-muted); margin-bottom:6px">Description</label>
+          <input id="fl2-desc" type="text" placeholder="{{ sheet.descHint }}" ref="{{ refDesc }}" style="width:100%; border:1.5px solid var(--fl-line); border-radius:14px; padding:13px 14px; font-size:13.5px; font-weight:600; outline:none; color:var(--fl-ink)" style-focus="border-color:var(--fl-green)">
+        </div>
+        <div>
+          <label for="fl2-cat" style="display:block; font-size:11.5px; font-weight:700; color:var(--fl-muted); margin-bottom:6px">{{ sheet.catLabel }}</label>
+          <select id="fl2-cat" ref="{{ refCat }}" style="width:100%; border:1.5px solid var(--fl-line); border-radius:14px; padding:13px 14px; font-size:13.5px; font-weight:600; background:#fff; color:var(--fl-ink)">
+            <sc-for list="{{ sheet.cats }}" as="c" hint-placeholder-count="6"><option>{{ c }}</option></sc-for>
+          </select>
+        </div>
+        <div style="display:flex; gap:12px">
+          <div style="flex:1 1 0; min-width:0">
+            <label for="fl2-day" style="display:block; font-size:11.5px; font-weight:700; color:var(--fl-muted); margin-bottom:6px">Day</label>
+            <input id="fl2-day" type="number" min="1" max="31" placeholder="22" ref="{{ refDay }}" style="width:100%; border:1.5px solid var(--fl-line); border-radius:14px; padding:13px 14px; font-size:13.5px; font-weight:600; outline:none; color:var(--fl-ink)" style-focus="border-color:var(--fl-green)">
+          </div>
+          <div style="flex:1 1 0; min-width:0">
+            <label for="fl2-method" style="display:block; font-size:11.5px; font-weight:700; color:var(--fl-muted); margin-bottom:6px">Method</label>
+            <select id="fl2-method" ref="{{ refMethod }}" style="width:100%; border:1.5px solid var(--fl-line); border-radius:14px; padding:13px 14px; font-size:13.5px; font-weight:600; background:#fff; color:var(--fl-ink)">
+              <sc-for list="{{ sheet.methods }}" as="m" hint-placeholder-count="4"><option>{{ m }}</option></sc-for>
+            </select>
+          </div>
+        </div>
+        <sc-if value="{{ sheet.err }}">
+          <div style="background:var(--fl-red-soft); color:var(--fl-red); border-radius:14px; padding:11px 14px; font-size:12.5px; font-weight:700">Enter an amount greater than zero.</div>
+        </sc-if>
+      </div>
+      <div style="padding:16px 22px 20px; display:flex; gap:10px; border-top:1px solid var(--fl-line)">
+        <button onClick="{{ saveEntry }}" style="flex:1 1 auto; border:0; border-radius:999px; background:var(--fl-green); color:#fff; font-size:13px; font-weight:700; padding:13px; cursor:pointer" style-hover="background:var(--fl-green-dark)">{{ sheet.cta }}</button>
+        <button onClick="{{ closeSheet }}" style="border:1.5px solid var(--fl-line); border-radius:999px; background:#fff; color:var(--fl-ink); font-size:13px; font-weight:700; padding:13px 18px; cursor:pointer" style-hover="border-color:var(--fl-green)">Cancel</button>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ toast }}">
+    <div style="position:fixed; left:50%; bottom:26px; transform:translateX(-50%); background:var(--fl-green-deep); color:#fff; border-radius:999px; padding:12px 20px; font-size:12.5px; font-weight:700; z-index:60; box-shadow:0 12px 30px rgba(8,51,34,0.3)">{{ toast }}</div>
+  </sc-if>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:1020},&quot;startScreen&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;dashboard&quot;,&quot;debt&quot;,&quot;transactions&quot;],&quot;default&quot;:&quot;dashboard&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Prototype&quot;},&quot;sampleData&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Prototype&quot;},&quot;sidebarCollapsed&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Prototype&quot;}}">
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.months = [
+      { label: "Apr 2026", short: "Apr", f: 1.32, bonus: 0 },
+      { label: "May 2026", short: "May", f: 1.55, bonus: 0 },
+      { label: "Jun 2026", short: "Jun", f: 1.10, bonus: 14000 },
+      { label: "Jul 2026", short: "Jul", f: 1.42, bonus: 0 },
+      { label: "Aug 2026", short: "Aug", f: 1.68, bonus: 0 },
+      { label: "Sep 2026", short: "Sep", f: 1.00, bonus: 0 }
+    ];
+    this.base = [
+      { d: 1, desc: "Salary credit", cat: "Salary", amt: 185000, m: "Bank Transfer", t: "income", fixed: true },
+      { d: 1, desc: "Monthly rent", cat: "Rent", amt: 28000, m: "Bank Transfer", t: "expense", fixed: true },
+      { d: 2, desc: "Home loan EMI", cat: "Loan EMI", amt: 34200, m: "Auto-Debit", t: "expense", fixed: true },
+      { d: 3, desc: "Car loan EMI", cat: "Loan EMI", amt: 12850, m: "Auto-Debit", t: "expense", fixed: true },
+      { d: 4, desc: "Personal loan EMI", cat: "Loan EMI", amt: 8100, m: "Auto-Debit", t: "expense", fixed: true },
+      { d: 5, desc: "Credit card payment", cat: "Loan EMI", amt: 6000, m: "UPI", t: "expense", fixed: true },
+      { d: 8, desc: "Weekly groceries", cat: "Groceries", amt: 8400, m: "UPI", t: "expense" },
+      { d: 9, desc: "Electricity bill", cat: "Utilities", amt: 3100, m: "UPI", t: "expense" },
+      { d: 11, desc: "Broadband + mobile", cat: "Utilities", amt: 2100, m: "UPI", t: "expense" },
+      { d: 12, desc: "Petrol", cat: "Fuel", amt: 4800, m: "Credit Card", t: "expense" },
+      { d: 14, desc: "Kirana top-up", cat: "Groceries", amt: 5800, m: "Cash", t: "expense" },
+      { d: 15, desc: "Dinner out", cat: "Dining", amt: 3350, m: "Credit Card", t: "expense" },
+      { d: 16, desc: "Amazon order", cat: "Shopping", amt: 7300, m: "Credit Card", t: "expense" },
+      { d: 17, desc: "OTT subscriptions", cat: "Subscriptions", amt: 1450, m: "Auto-Debit", t: "expense" },
+      { d: 19, desc: "Cafe and snacks", cat: "Dining", amt: 3000, m: "UPI", t: "expense" },
+      { d: 20, desc: "Pharmacy", cat: "Medical", amt: 2200, m: "UPI", t: "expense" },
+      { d: 22, desc: "Household misc", cat: "Other Expenses", amt: 2000, m: "Cash", t: "expense" }
+    ];
+    this.loans = [
+      { name: "Home loan — HDFC", bal: 3860000, rate: 8.6, emi: 34200 },
+      { name: "Car loan — SBI", bal: 412000, rate: 9.4, emi: 12850 },
+      { name: "Personal loan — Axis", bal: 186000, rate: 14.5, emi: 8100 },
+      { name: "Credit card — ICICI", bal: 74500, rate: 42.0, emi: 6000 }
+    ];
+    this.origPrincipal = 6200000;
+    this.methods = ["UPI", "Cash", "Credit Card", "Debit Card", "Bank Transfer", "Auto-Debit", "Digital Wallet"];
+    this.expenseCats = ["Rent", "Groceries", "Utilities", "Fuel", "Dining", "Shopping", "Subscriptions", "Medical", "Loan EMI", "Other Expenses"];
+    this.incomeCats = ["Salary", "Bonus", "Freelance", "Interest", "Rental income", "Other income"];
+    this.cash = 246800;
+    this.unallocated = 18450;
+    this.refAmount = React.createRef();
+    this.refDesc = React.createRef();
+    this.refCat = React.createRef();
+    this.refDay = React.createRef();
+    this.refMethod = React.createRef();
+    const seed = [];
+    this.months.forEach((m, mi) => {
+      this.base.forEach((b, bi) => {
+        seed.push({
+          id: "s" + mi + "_" + bi, mi, d: b.d, desc: b.desc, cat: b.cat, m: b.m, t: b.t,
+          amt: Math.round(b.fixed ? b.amt : b.amt * m.f)
+        });
+      });
+      if (m.bonus) seed.push({ id: "b" + mi, mi, d: 7, desc: "Annual bonus", cat: "Bonus", m: "Bank Transfer", t: "income", amt: m.bonus });
+    });
+    this.state = {
+      screen: props.startScreen || "dashboard", stubName: "",
+      empty: props.sampleData === false, collapsed: !!props.sidebarCollapsed,
+      mi: 5, txs: seed, hoverBar: null, drill: null,
+      strategy: "avalanche", extra: 6000,
+      q: "", type: "All types", cat: "All categories", scope: "month",
+      sheet: null, sheetErr: false, toast: ""
+    };
+  }
+
+  fmt(n) { return "₹" + Math.round(n).toLocaleString("en-IN"); }
+  pct(n, d) { return n.toFixed(d === undefined ? 1 : d) + "%"; }
+  monthName(off) {
+    const names = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const t = 8 + off, y = 2026 + Math.floor(t / 12);
+    return names[t % 12] + " " + y;
+  }
+  flash(msg) {
+    this.setState({ toast: msg });
+    clearTimeout(this._t);
+    this._t = setTimeout(() => this.setState({ toast: "" }), 2200);
+  }
+  monthTxs(mi) { return this.state.empty ? [] : this.state.txs.filter((t) => t.mi === mi); }
+  sumOf(list, type) { return list.filter((t) => t.t === type).reduce((s, t) => s + t.amt, 0); }
+
+  simulate(extra, strategy) {
+    let bals = this.loans.map((l) => ({ ...l }));
+    const pool = this.loans.reduce((s, l) => s + l.emi, 0) + extra;
+    let months = 0, interest = 0;
+    const series = [bals.reduce((s, l) => s + l.bal, 0)];
+    const done = {};
+    while (bals.some((l) => l.bal > 0.5) && months < 600) {
+      months++;
+      let budget = pool;
+      bals.forEach((l) => {
+        if (l.bal <= 0.5) return;
+        const i = (l.bal * l.rate) / 1200;
+        l.bal += i; interest += i;
+      });
+      bals.forEach((l) => {
+        if (l.bal <= 0.5) return;
+        const pay = Math.min(l.emi, l.bal, budget);
+        l.bal -= pay; budget -= pay;
+      });
+      const order = bals.filter((l) => l.bal > 0.5).sort((a, b) =>
+        strategy === "snowball" ? a.bal - b.bal : b.rate - a.rate);
+      order.forEach((l) => {
+        if (budget <= 0) return;
+        const pay = Math.min(l.bal, budget);
+        l.bal -= pay; budget -= pay;
+      });
+      bals.forEach((l) => { if (l.bal <= 0.5 && !done[l.name]) done[l.name] = months; });
+      series.push(bals.reduce((s, l) => s + Math.max(l.bal, 0), 0));
+    }
+    return { months, interest, series, done };
+  }
+
+  points(series, maxV, maxM) {
+    return series.map((v, i) =>
+      ((i / maxM) * 100).toFixed(2) + "," + (44 - (v / maxV) * 41).toFixed(2)).join(" ");
+  }
+
+  renderVals() {
+    const s = this.state, empty = s.empty;
+    const green = "var(--fl-green)", greenDark = "var(--fl-green-dark)", deep = "var(--fl-green-deep)";
+    const ink = "var(--fl-ink)", muted = "var(--fl-muted)", red = "var(--fl-red)";
+    const line = "var(--fl-line)", mint = "var(--fl-mint)", mintSoft = "var(--fl-mint-soft)";
+    const dash = "—";
+
+    const screens = ["dashboard", "budget", "transactions", "accounts", "loans", "debt", "investments", "emergency", "calendar", "reports", "settings"];
+    const go = {}, bg = {}, fg = {};
+    const real = { dashboard: 1, transactions: 1, debt: 1 };
+    screens.forEach((k) => {
+      const active = s.screen === k;
+      bg[k] = active ? mintSoft : "transparent";
+      fg[k] = active ? greenDark : ink;
+      go[k] = (e) => {
+        if (e && e.preventDefault) e.preventDefault();
+        this.setState({ screen: real[k] ? k : "stub", stubName: k, sheet: null });
+      };
+    });
+
+    const m = this.months[s.mi];
+    const list = this.monthTxs(s.mi);
+    const income = this.sumOf(list, "income");
+    const expenses = this.sumOf(list, "expense");
+    const cash = empty ? 0 : this.cash;
+    const totalDebt = empty ? 0 : this.loans.reduce((a, l) => a + l.bal, 0);
+    const totalEmi = empty ? 0 : this.loans.reduce((a, l) => a + l.emi, 0);
+    const savings = income ? ((income - expenses) / income) * 100 : 0;
+
+    const baseSim = empty ? null : this.simulate(0, s.strategy);
+    const accSim = empty ? null : this.simulate(s.extra, s.strategy);
+    const monthsSaved = empty ? 0 : baseSim.months - accSim.months;
+    const interestSaved = empty ? 0 : baseSim.interest - accSim.interest;
+
+    const upRaw = [
+      { day: "30", mon: "Sep", when: "30 Sep", label: "Home loan EMI", kind: "Auto-debit · HDFC", amt: 34200 },
+      { day: "01", mon: "Oct", when: "1 Oct", label: "Nifty 50 index SIP", kind: "Investment · Groww", amt: 12000 },
+      { day: "03", mon: "Oct", when: "3 Oct", label: "Credit card due", kind: "ICICI Platinum", amt: 24800 },
+      { day: "08", mon: "Oct", when: "8 Oct", label: "Term insurance premium", kind: "Annual · HDFC Life", amt: 18600 }
+    ];
+
+    const filled = (label, value, pill, sub, click) => ({
+      label, value, pill, sub, click,
+      cardBg: deep, cardBorder: deep, labelColor: "#ffffff", valueColor: "#ffffff",
+      arrowBorder: "rgba(255,255,255,0.45)", arrowColor: "#ffffff",
+      pillBg: "rgba(191,228,207,0.22)", pillFg: mint, subColor: "rgba(255,255,255,0.72)"
+    });
+    const plain = (label, value, pill, sub, click, valueColor) => ({
+      label, value, pill, sub, click,
+      cardBg: "#ffffff", cardBorder: line, labelColor: muted, valueColor: valueColor || ink,
+      arrowBorder: line, arrowColor: muted,
+      pillBg: mintSoft, pillFg: greenDark, subColor: muted
+    });
+
+    const net = income - expenses;
+    const headline = [
+      filled("Net this month", empty ? dash : this.fmt(net), empty ? "No data" : this.pct(savings) + " saved", empty ? "Load sample data" : "Income minus everything paid", go.transactions),
+      plain("Available cash", this.fmt(cash), empty ? "No accounts" : "4 accounts", empty ? "Add an account" : this.fmt(this.unallocated) + " unallocated", go.accounts),
+      plain("Outstanding debt", this.fmt(totalDebt), empty ? "No loans" : this.fmt(totalEmi) + " EMI", empty ? "Add a loan" : (income ? this.pct((totalEmi / income) * 100) + " of income" : ""), go.debt, red),
+      plain("Emergency fund", empty ? this.fmt(0) : this.fmt(285000), empty ? "0%" : "47% funded", empty ? "Set a target" : "4.2 months of expenses", go.emergency)
+    ];
+
+    const maxBar = empty ? 1 : Math.max(...this.months.map((_, i) => {
+      const l = this.monthTxs(i);
+      return Math.max(this.sumOf(l, "income"), this.sumOf(l, "expense"));
+    }));
+    const bars = this.months.map((mm, i) => {
+      const l = this.monthTxs(i);
+      const inc = this.sumOf(l, "income"), exp = this.sumOf(l, "expense");
+      const hovered = s.hoverBar === i, sel = s.mi === i;
+      const lit = hovered || sel;
+      return {
+        label: mm.label, short: mm.short,
+        incH: empty ? "3%" : Math.max((inc / maxBar) * 100, 3).toFixed(1) + "%",
+        expH: empty ? "3%" : Math.max((exp / maxBar) * 100, 3).toFixed(1) + "%",
+        incFill: lit ? green : "var(--fl-hatch)",
+        expFill: lit ? red : "var(--fl-hatch)",
+        inc: this.fmt(inc), exp: this.fmt(exp), net: this.fmt(inc - exp),
+        active: hovered && !empty,
+        hoverBg: hovered ? "#f4f6f5" : "transparent",
+        labelColor: sel ? greenDark : muted,
+        enter: () => this.setState({ hoverBar: i }),
+        leave: () => this.setState({ hoverBar: null }),
+        select: () => this.setState({ mi: i, drill: null })
+      };
+    });
+
+    const catMap = {};
+    list.filter((t) => t.t === "expense").forEach((t) => { catMap[t.cat] = (catMap[t.cat] || 0) + t.amt; });
+    const catArr = Object.keys(catMap).map((k) => ({ name: k, amt: catMap[k] })).sort((a, b) => b.amt - a.amt).slice(0, 7);
+    const catMax = catArr.length ? catArr[0].amt : 1;
+    const cats = catArr.map((c) => {
+      const active = s.drill === c.name;
+      return {
+        name: c.name, amt: this.fmt(c.amt), pct: ((c.amt / (expenses || 1)) * 100).toFixed(0) + "%",
+        w: ((c.amt / catMax) * 100).toFixed(1) + "%",
+        color: active ? green : greenDark,
+        rowBg: active ? mintSoft : "transparent",
+        click: () => this.setState({ drill: active ? null : c.name })
+      };
+    });
+    const drillItems = s.drill ? list.filter((t) => t.cat === s.drill && t.t === "expense") : [];
+    const drillTotal = drillItems.reduce((a, t) => a + t.amt, 0);
+
+    const cleared = this.origPrincipal - totalDebt;
+    const clearedPct = empty ? 0 : (cleared / this.origPrincipal) * 100;
+    const arcLen = 282.7;
+    const gauge = {
+      pct: Math.round(clearedPct) + "%",
+      dash: (arcLen * clearedPct / 100).toFixed(1) + " " + arcLen,
+      cleared: this.fmt(empty ? 0 : cleared),
+      left: this.fmt(totalDebt)
+    };
+
+    const orderSorted = [...this.loans].sort((a, b) =>
+      s.strategy === "snowball" ? a.bal - b.bal : b.rate - a.rate);
+    const loanMax = this.loans[0].bal;
+    const maxM = Math.max(baseSim ? baseSim.months : 1, 1);
+    const maxV = totalDebt || 1;
+    const plan = {
+      extra: s.extra, extraLabel: this.fmt(s.extra), freeCash: this.fmt(28850),
+      avaBg: s.strategy === "avalanche" ? green : "transparent",
+      avaFg: s.strategy === "avalanche" ? "#ffffff" : ink,
+      snowBg: s.strategy === "snowball" ? green : "transparent",
+      snowFg: s.strategy === "snowball" ? "#ffffff" : ink,
+      strategyNote: s.strategy === "avalanche"
+        ? "Highest interest rate first — the credit card at 42% goes before anything else. Cheapest in total interest."
+        : "Smallest balance first — you close accounts sooner, which keeps motivation up but costs more interest.",
+      orderLabel: s.strategy === "avalanche" ? "highest rate first" : "smallest balance first",
+      basePoints: baseSim ? this.points(baseSim.series, maxV, maxM) : "0,44",
+      accPoints: accSim ? this.points(accSim.series, maxV, maxM) : "0,44",
+      axisEnd: baseSim ? this.monthName(baseSim.months) : dash,
+      headline: [
+        filled("Debt-free date", accSim ? this.monthName(accSim.months) : dash, accSim ? accSim.months + " months" : "—", "At the current scenario"),
+        plain("Months saved", accSim ? monthsSaved + "" : dash, "", "Versus minimum EMIs only", null, greenDark),
+        plain("Interest saved", accSim ? this.fmt(interestSaved) : dash, "", "Estimate over the full plan", null, greenDark),
+        plain("Total interest paid", accSim ? this.fmt(accSim.interest) : dash, "", "On this plan", null, red)
+      ],
+      loans: orderSorted.map((l, i) => ({
+        rank: i + 1 + "",
+        rankBg: i === 0 ? green : "#f4f6f5", rankFg: i === 0 ? "#ffffff" : muted,
+        name: l.name, bal: this.fmt(l.bal), rate: this.pct(l.rate, 1), emi: this.fmt(l.emi),
+        payoff: accSim && accSim.done[l.name] ? this.monthName(accSim.done[l.name]) : dash,
+        w: ((l.bal / loanMax) * 100).toFixed(1) + "%",
+        color: i === 0 ? green : greenDark
+      }))
+    };
+
+    const decorate = (t) => ({
+      date: t.d + " " + this.months[t.mi].short, desc: t.desc, cat: t.cat, method: t.m,
+      meta: t.d + " " + this.months[t.mi].short + " · " + t.cat + " · " + t.m,
+      sign: t.t === "income" ? "+" : "−",
+      signed: (t.t === "income" ? "+" : "−") + this.fmt(t.amt),
+      color: t.t === "income" ? greenDark : ink,
+      dotBg: t.t === "income" ? mintSoft : "var(--fl-red-soft)",
+      dotFg: t.t === "income" ? greenDark : red
+    });
+
+    const scoped = s.scope === "month" ? this.monthTxs(s.mi) : (empty ? [] : s.txs);
+    const q = s.q.trim().toLowerCase();
+    const rows = scoped.filter((t) => {
+      if (s.type === "Expense" && t.t !== "expense") return false;
+      if (s.type === "Income" && t.t !== "income") return false;
+      if (s.cat !== "All categories" && t.cat !== s.cat) return false;
+      if (q && !(t.desc + " " + t.cat + " " + t.m).toLowerCase().includes(q)) return false;
+      return true;
+    }).sort((a, b) => (b.mi - a.mi) || (b.d - a.d));
+    const rowsIn = rows.filter((t) => t.t === "income").reduce((a, t) => a + t.amt, 0);
+    const rowsOut = rows.filter((t) => t.t === "expense").reduce((a, t) => a + t.amt, 0);
+    const allCats = [...new Set(s.txs.map((t) => t.cat))].sort();
+    const tx = {
+      q: s.q, type: s.type, cat: s.cat,
+      catOptions: ["All categories", ...allCats],
+      monthBg: s.scope === "month" ? green : "transparent",
+      monthFg: s.scope === "month" ? "#ffffff" : ink,
+      allBg: s.scope === "all" ? green : "transparent",
+      allFg: s.scope === "all" ? "#ffffff" : ink,
+      none: rows.length === 0,
+      stats: [
+        { label: "Matching transactions", value: rows.length + "", color: ink },
+        { label: "Money in", value: this.fmt(rowsIn), color: greenDark },
+        { label: "Money out", value: this.fmt(rowsOut), color: red }
+      ],
+      rows: rows.map(decorate)
+    };
+
+    const isIncome = s.sheet === "income";
+    const sheet = {
+      title: isIncome ? "Add income" : "Add expense",
+      cta: isIncome ? "Save income" : "Save expense",
+      descHint: isIncome ? "e.g. Freelance invoice" : "e.g. Weekend groceries",
+      catLabel: isIncome ? "Source" : "Category",
+      cats: isIncome ? this.incomeCats : this.expenseCats,
+      methods: this.methods, err: s.sheetErr,
+      expBg: !isIncome ? green : "transparent", expFg: !isIncome ? "#ffffff" : ink,
+      incBg: isIncome ? green : "transparent", incFg: isIncome ? "#ffffff" : ink
+    };
+
+    const titles = {
+      dashboard: ["Dashboard", "Your money this month, and how fast the debt is clearing."],
+      debt: ["Debt Planner", "Move the extra-payment slider and watch the debt-free date move with it."],
+      transactions: ["Transactions", "Every credit and debit, filterable down to a single category."],
+      stub: [(s.stubName || "").replace(/^./, (c) => c.toUpperCase()), "Part of the shell, not built out in this prototype."]
+    };
+    const t2 = titles[s.screen] || titles.dashboard;
+
+    return {
+      go, bg, fg,
+      sidebarW: s.collapsed ? "76px" : "246px",
+      labelStyle: s.collapsed ? "display:none" : "display:block",
+      toggleSidebar: () => this.setState({ collapsed: !s.collapsed }),
+      txCount: empty ? "0" : s.txs.filter((t) => t.mi === s.mi).length + "",
+      screenTitle: t2[0], screenSub: t2[1],
+      isDashboard: s.screen === "dashboard", isDebt: s.screen === "debt",
+      isTx: s.screen === "transactions", isStub: s.screen === "stub",
+      isEmpty: empty, monthLabel: m.label,
+      heroTargetDate: empty ? "Add a loan" : this.monthName(accSim.months),
+      heroTargetSub: empty ? "No debt tracked yet" : monthsSaved + " months earlier than the minimum-EMI path",
+      prevMonth: () => this.setState({ mi: Math.max(0, s.mi - 1), drill: null }),
+      nextMonth: () => this.setState({ mi: Math.min(this.months.length - 1, s.mi + 1), drill: null }),
+      setSample: () => this.setState({ empty: false }),
+      setEmpty: () => this.setState({ empty: true, drill: null }),
+      seg: {
+        sampleBg: !empty ? "#ffffff" : "transparent", sampleFg: !empty ? greenDark : muted,
+        emptyBg: empty ? "#ffffff" : "transparent", emptyFg: empty ? greenDark : muted
+      },
+      headline, bars, cats, gauge,
+      debtOriginal: this.fmt(this.origPrincipal),
+      countdown: {
+        months: empty ? dash : accSim.months + "",
+        date: empty ? "No plan yet" : this.monthName(accSim.months),
+        extra: this.fmt(s.extra),
+        saved: empty ? dash : this.fmt(interestSaved)
+      },
+      drill: {
+        name: s.drill || "",
+        meta: drillItems.length + " transactions · " + this.fmt(drillTotal) + " · " + ((drillTotal / (expenses || 1)) * 100).toFixed(0) + "% of spend",
+        items: drillItems.map((t) => ({ date: t.d + " " + m.short, desc: t.desc, amt: this.fmt(t.amt) })),
+        seeAll: () => this.setState({ screen: "transactions", cat: s.drill, scope: "month", q: "" })
+      },
+      hasDrill: !!s.drill && drillItems.length > 0,
+      clearDrill: () => this.setState({ drill: null }),
+      hasUpcoming: !empty,
+      nextUp: { ...upRaw[0], amt: this.fmt(upRaw[0].amt) },
+      upcomingRest: empty ? [] : upRaw.slice(1).map((u) => ({ ...u, amt: this.fmt(u.amt) })),
+      recent: list.slice().sort((a, b) => b.d - a.d).slice(0, 5).map(decorate),
+      plan,
+      setExtra: (e) => this.setState({ extra: Number(e.target.value) }),
+      setAvalanche: () => this.setState({ strategy: "avalanche" }),
+      setSnowball: () => this.setState({ strategy: "snowball" }),
+      tx,
+      setQ: (e) => this.setState({ q: e.target.value }),
+      searchFromTop: (e) => this.setState({ q: e.target.value, screen: e.target.value ? "transactions" : s.screen }),
+      setType: (e) => this.setState({ type: e.target.value }),
+      setCat: (e) => this.setState({ cat: e.target.value }),
+      scopeMonth: () => this.setState({ scope: "month" }),
+      scopeAll: () => this.setState({ scope: "all" }),
+      sheet, sheetOpen: !!s.sheet, toast: s.toast,
+      openExpense: () => this.setState({ sheet: "expense", sheetErr: false, empty: false }),
+      openIncome: () => this.setState({ sheet: "income", sheetErr: false, empty: false }),
+      closeSheet: () => this.setState({ sheet: null, sheetErr: false }),
+      refAmount: this.refAmount, refDesc: this.refDesc, refCat: this.refCat,
+      refDay: this.refDay, refMethod: this.refMethod,
+      saveEntry: () => {
+        const amt = Number(this.refAmount.current && this.refAmount.current.value);
+        if (!amt || amt <= 0) { this.setState({ sheetErr: true }); return; }
+        const isInc = s.sheet === "income";
+        const day = Math.min(31, Math.max(1, Number(this.refDay.current && this.refDay.current.value) || 22));
+        const entry = {
+          id: "u" + Date.now(), mi: s.mi, d: day,
+          desc: (this.refDesc.current && this.refDesc.current.value) || (isInc ? "Income" : "Expense"),
+          cat: (this.refCat.current && this.refCat.current.value) || (isInc ? "Salary" : "Other Expenses"),
+          m: (this.refMethod.current && this.refMethod.current.value) || "UPI",
+          t: isInc ? "income" : "expense", amt: Math.round(amt)
+        };
+        this.setState({ txs: [entry, ...s.txs], sheet: null, sheetErr: false });
+        this.flash((isInc ? "Income" : "Expense") + " of " + this.fmt(amt) + " added to " + m.label);
+      }
+    };
+  }
+}
+</script>
+</body>
+</html>

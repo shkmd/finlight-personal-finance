@@ -2,7 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { requireUserId } from "@/lib/session";
-import { currentYearMonth, daysInMonth } from "@/lib/dates";
+import { currentYearMonth, daysInMonth, formatDateOnly } from "@/lib/dates";
 import { monthlyEquivalentMinor } from "@/lib/finance/sip";
 import { getBudgetVsActual } from "@/lib/actions/budget";
 import { recommendedTargetMinor, progressPercent } from "@/lib/finance/emergencyFund";
@@ -11,35 +11,64 @@ import { emiAsPercentOfIncome } from "@/lib/finance/emi";
 import { ESSENTIAL_CATEGORY_NAMES } from "@/lib/defaults";
 
 const LIQUID_ACCOUNT_TYPES = ["BANK", "CASH", "WALLET"] as const;
+const CATEGORY_COLORS = ["#1a7f4b", "#0c4429", "#c0392b", "#6c7873", "#bfe4cf", "#083322", "#dfe3e0"];
+const MONTH_SHORT = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-export async function getDashboardSummary() {
+function shiftMonth(year: number, month: number, delta: number) {
+  const d = new Date(Date.UTC(year, month - 1 + delta, 1));
+  return { year: d.getUTCFullYear(), month: d.getUTCMonth() + 1 };
+}
+
+export async function getDashboardSummary(target?: { year: number; month: number }) {
   const userId = await requireUserId();
-  const { year, month } = currentYearMonth();
+  const { year, month } = target ?? currentYearMonth();
   const monthStart = new Date(Date.UTC(year, month - 1, 1));
   const monthEnd = new Date(Date.UTC(year, month, 1));
   const today = new Date();
 
-  const [accounts, activeLoans, activeInvestments, pausedInvestments, emergencyFunds, budgetVsActual, recentExpenses, recentIncome] =
-    await Promise.all([
-      prisma.financialAccount.findMany({ where: { userId, isArchived: false } }),
-      prisma.loan.findMany({ where: { userId, status: "ACTIVE" } }),
-      prisma.investment.findMany({ where: { userId, isActive: true } }),
-      prisma.investment.findMany({ where: { userId, isActive: false } }),
-      prisma.emergencyFund.findMany({ where: { userId } }),
-      getBudgetVsActual(year, month),
-      prisma.expenseTransaction.findMany({
-        where: { userId, date: { gte: new Date(Date.UTC(year, month - 4, 1)), lt: monthEnd }, status: "PAID" },
-        include: { category: true },
-      }),
-      prisma.incomeTransaction.aggregate({
-        where: { userId, expectedDate: { gte: monthStart, lt: monthEnd } },
-        _sum: { plannedAmountMinor: true, actualAmountMinor: true },
-      }),
-    ]);
+  const seriesRange = shiftMonth(year, month, -5);
+  const seriesStart = new Date(Date.UTC(seriesRange.year, seriesRange.month - 1, 1));
+
+  const [
+    accounts,
+    activeLoans,
+    allLoans,
+    activeInvestments,
+    pausedInvestments,
+    emergencyFunds,
+    budgetVsActual,
+    seriesExpenses,
+    seriesIncome,
+    monthExpensesForActivity,
+    monthIncomeForActivity,
+  ] = await Promise.all([
+    prisma.financialAccount.findMany({ where: { userId, isArchived: false } }),
+    prisma.loan.findMany({ where: { userId, status: "ACTIVE" } }),
+    prisma.loan.findMany({ where: { userId, status: { not: "ARCHIVED" } } }),
+    prisma.investment.findMany({ where: { userId, isActive: true } }),
+    prisma.investment.findMany({ where: { userId, isActive: false } }),
+    prisma.emergencyFund.findMany({ where: { userId } }),
+    getBudgetVsActual(year, month),
+    prisma.expenseTransaction.findMany({
+      where: { userId, date: { gte: seriesStart, lt: monthEnd }, status: "PAID" },
+      include: { category: true },
+    }),
+    prisma.incomeTransaction.findMany({
+      where: { userId, expectedDate: { gte: seriesStart, lt: monthEnd } },
+    }),
+    prisma.expenseTransaction.findMany({
+      where: { userId, date: { gte: monthStart, lt: monthEnd }, status: "PAID" },
+      include: { category: true },
+    }),
+    prisma.incomeTransaction.findMany({
+      where: { userId, expectedDate: { gte: monthStart, lt: monthEnd }, status: { in: ["RECEIVED", "PARTIALLY_RECEIVED"] } },
+    }),
+  ]);
 
   const currentAvailableCashMinor = accounts
     .filter((a) => (LIQUID_ACCOUNT_TYPES as readonly string[]).includes(a.type))
     .reduce((s, a) => s + a.currentBalanceMinor, 0);
+  const liquidAccountsCount = accounts.filter((a) => (LIQUID_ACCOUNT_TYPES as readonly string[]).includes(a.type)).length;
 
   const totalOutstandingDebtMinor = activeLoans.reduce((s, l) => s + l.currentOutstandingPrincipalMinor, 0);
   const totalMonthlyEmiMinor = activeLoans.reduce((s, l) => s + l.currentEmiMinor, 0);
@@ -47,10 +76,12 @@ export async function getDashboardSummary() {
     totalOutstandingDebtMinor > 0
       ? activeLoans.reduce((s, l) => s + l.annualInterestRatePercent * l.currentOutstandingPrincipalMinor, 0) / totalOutstandingDebtMinor
       : 0;
+  const originalPrincipalMinor = allLoans.reduce((s, l) => s + l.originalPrincipalMinor, 0);
+  const clearedPrincipalMinor = Math.max(0, originalPrincipalMinor - totalOutstandingDebtMinor);
 
-  const plannedIncomeMinor = recentIncome._sum.plannedAmountMinor ?? 0;
-  const actualIncomeMinor = recentIncome._sum.actualAmountMinor ?? 0;
-  const emiToIncomeRatio = emiAsPercentOfIncome(totalMonthlyEmiMinor, plannedIncomeMinor || actualIncomeMinor);
+  const monthIncomeMinor = monthIncomeForActivity.reduce((s, i) => s + (i.actualAmountMinor ?? 0), 0);
+  const monthExpenseMinor = monthExpensesForActivity.filter((e) => !e.refundOfExpenseId).reduce((s, e) => s + e.amountMinor, 0);
+  const emiToIncomeRatio = emiAsPercentOfIncome(totalMonthlyEmiMinor, monthIncomeMinor);
 
   let baselineDebtFreeDate: Date | null = null;
   if (activeLoans.length) {
@@ -77,10 +108,8 @@ export async function getDashboardSummary() {
     0
   );
 
-  // Average monthly essential spend over the last (up to) 3 complete months, for the emergency-fund target.
-  const essentialExpenses = recentExpenses.filter((e) => e.category && ESSENTIAL_CATEGORY_NAMES.has(e.category.name));
-  const monthsSpanned = Math.max(1, Math.min(3, month >= 4 ? 3 : month - 1 || 1));
-  const avgMonthlyEssentialMinor = essentialExpenses.reduce((s, e) => s + e.amountMinor, 0) / monthsSpanned;
+  const essentialExpenses = seriesExpenses.filter((e) => e.category && ESSENTIAL_CATEGORY_NAMES.has(e.category.name));
+  const avgMonthlyEssentialMinor = essentialExpenses.reduce((s, e) => s + e.amountMinor, 0) / 6;
 
   const primaryFund = emergencyFunds[0] ?? null;
   const emergencyFundBalanceMinor = emergencyFunds.reduce((s, f) => s + f.currentSavedAmountMinor, 0);
@@ -94,10 +123,7 @@ export async function getDashboardSummary() {
     : 0;
   const emergencyFundProgressPercent = primaryFund ? progressPercent(emergencyFundBalanceMinor, emergencyFundTargetMinor) : 0;
 
-  const savingsRatePercent =
-    budgetVsActual && budgetVsActual.totalReceivedIncomeMinor > 0
-      ? ((budgetVsActual.totalReceivedIncomeMinor - budgetVsActual.totalActualPaidMinor) / budgetVsActual.totalReceivedIncomeMinor) * 100
-      : 0;
+  const savingsRatePercent = monthIncomeMinor > 0 ? ((monthIncomeMinor - monthExpenseMinor) / monthIncomeMinor) * 100 : 0;
 
   const [nextIncome, nextLoan, nextInvestment, upcomingBills] = await Promise.all([
     prisma.incomeTransaction.findFirst({
@@ -122,14 +148,76 @@ export async function getDashboardSummary() {
     })
     .sort((a, b) => a.dueDate.getTime() - b.dueDate.getTime())[0];
 
+  // Six-month cash-flow series ending at the selected month.
+  const series = Array.from({ length: 6 }, (_, i) => shiftMonth(year, month, -5 + i)).map(({ year: y, month: m }) => {
+    const start = new Date(Date.UTC(y, m - 1, 1));
+    const end = new Date(Date.UTC(y, m, 1));
+    const incomeMinor = seriesIncome
+      .filter((t) => t.expectedDate >= start && t.expectedDate < end)
+      .reduce((s, t) => s + (t.actualAmountMinor ?? 0), 0);
+    const expenseMinor = seriesExpenses
+      .filter((t) => t.date >= start && t.date < end && !t.refundOfExpenseId)
+      .reduce((s, t) => s + t.amountMinor, 0);
+    return { year: y, month: m, label: `${MONTH_SHORT[m - 1]} ${y}`, short: MONTH_SHORT[m - 1], incomeMinor, expenseMinor };
+  });
+
+  // Top expense categories for the selected month, with line items for drill-down.
+  const categoryTotals = new Map<string, number>();
+  const categoryItems = new Map<string, Array<{ date: Date; desc: string; amountMinor: number }>>();
+  for (const e of monthExpensesForActivity) {
+    if (e.refundOfExpenseId) continue;
+    const name = e.category?.name ?? "Uncategorized";
+    categoryTotals.set(name, (categoryTotals.get(name) ?? 0) + e.amountMinor);
+    if (!categoryItems.has(name)) categoryItems.set(name, []);
+    categoryItems.get(name)!.push({ date: e.date, desc: e.name, amountMinor: e.amountMinor });
+  }
+  const sortedCategories = [...categoryTotals.entries()].sort((a, b) => b[1] - a[1]).slice(0, 7);
+  const categoryMax = sortedCategories[0]?.[1] ?? 1;
+  const categories = sortedCategories.map(([name, amountMinor], i) => ({
+    name,
+    amountMinor,
+    percentOfSpend: monthExpenseMinor > 0 ? (amountMinor / monthExpenseMinor) * 100 : 0,
+    widthPercent: (amountMinor / categoryMax) * 100,
+    color: CATEGORY_COLORS[i % CATEGORY_COLORS.length],
+    items: (categoryItems.get(name) ?? [])
+      .sort((a, b) => b.date.getTime() - a.date.getTime())
+      .map((it) => ({ date: formatDateOnly(it.date, "d MMM"), desc: it.desc, amountMinor: it.amountMinor })),
+  }));
+
+  // Latest activity: most recent income + expense entries this month.
+  const activity = [
+    ...monthExpensesForActivity
+      .filter((e) => !e.refundOfExpenseId)
+      .map((e) => ({
+        id: e.id,
+        date: e.date,
+        description: e.name,
+        meta: `${formatDateOnly(e.date, "d MMM")} · ${e.category?.name ?? "Uncategorized"}`,
+        amountMinor: e.amountMinor,
+        isIncome: false,
+      })),
+    ...monthIncomeForActivity.map((inc) => ({
+      id: inc.id,
+      date: inc.receivedDate ?? inc.expectedDate,
+      description: inc.sourceName,
+      meta: `${formatDateOnly(inc.receivedDate ?? inc.expectedDate, "d MMM")} · ${inc.category}`,
+      amountMinor: inc.actualAmountMinor ?? inc.plannedAmountMinor,
+      isIncome: true,
+    })),
+  ]
+    .sort((a, b) => b.date.getTime() - a.date.getTime())
+    .slice(0, 5);
+
   return {
     month,
     year,
     daysInMonth: daysInMonth(year, month - 1),
-    totalIncomeReceivedMinor: actualIncomeMinor,
-    totalExpensesThisMonthMinor: budgetVsActual?.totalActualPaidMinor ?? 0,
+    monthLabel: `${MONTH_SHORT[month - 1]} ${year}`,
+    totalIncomeReceivedMinor: monthIncomeMinor,
+    totalExpensesThisMonthMinor: monthExpenseMinor,
     plannedAllocationMinor: budgetVsActual?.totalPlannedAllocationMinor ?? 0,
     currentAvailableCashMinor,
+    liquidAccountsCount,
     unallocatedCashMinor: budgetVsActual?.unallocatedCashMinor ?? null,
     projectedMonthEndBalanceMinor: budgetVsActual?.projectedMonthEndBalanceMinor ?? null,
     actualMonthEndBalanceMinor: budgetVsActual?.actualMonthEndBalanceMinor ?? null,
@@ -137,10 +225,13 @@ export async function getDashboardSummary() {
     totalMonthlyEmiMinor,
     emiToIncomeRatio,
     weightedAvgInterestRate: weightedAvgRate,
+    originalPrincipalMinor,
+    clearedPrincipalMinor,
     baselineDebtFreeDate,
     acceleratedDebtFreeDate: scenarioSummary?.acceleratedDebtFreeDate ? new Date(scenarioSummary.acceleratedDebtFreeDate) : null,
     monthsSaved: scenarioSummary?.monthsSaved ?? null,
     interestSavedMinor: scenarioSummary?.interestSavedMinor ?? null,
+    extraMonthlyAmountMinor: latestScenario?.extraMonthlyAmountMinor ?? 0,
     activeSipMonthlyMinor,
     pausedSipMonthlyMinor,
     emergencyFundBalanceMinor,
@@ -149,6 +240,9 @@ export async function getDashboardSummary() {
     savingsRatePercent,
     budgetAdherenceScorePercent: budgetVsActual?.budgetAdherenceScorePercent ?? null,
     hasBudget: !!budgetVsActual,
+    series,
+    categories,
+    activity,
     upcoming: {
       nextIncome,
       nextEmi: nextLoan ? { loan: nextLoan, date: nextLoan.nextPaymentDate } : null,

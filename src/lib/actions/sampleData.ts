@@ -274,7 +274,7 @@ export async function generateSampleData(): Promise<ActionResult<{ created: bool
           },
         });
       }
-    });
+    }, { timeout: 20_000 });
 
     revalidatePath("/dashboard");
     revalidatePath("/accounts");
@@ -299,7 +299,7 @@ export async function clearSampleData(): Promise<ActionResult<{ cleared: boolean
       await tx.investment.deleteMany({ where: { userId, isSampleData: true } });
       await tx.emergencyFund.deleteMany({ where: { userId, isSampleData: true } });
       await tx.financialAccount.deleteMany({ where: { userId, isSampleData: true } });
-    });
+    }, { timeout: 15_000 });
 
     revalidatePath("/dashboard");
     revalidatePath("/accounts");

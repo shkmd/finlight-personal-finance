@@ -11,7 +11,7 @@ import { createExpense, updateExpense, findPossibleDuplicateExpenses } from "@/l
 import { fromMinorUnits, formatCurrency } from "@/lib/money";
 
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -100,20 +100,21 @@ export function ExpenseFormDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
+    <Sheet open={open} onOpenChange={setOpen}>
+      <SheetTrigger asChild>
         {trigger ?? (
-          <Button size="sm">
-            <Plus className="mr-1 size-4" /> Add Expense
+          <Button className="rounded-full bg-(--fl-green) hover:bg-(--fl-green-dark)">
+            <Plus className="mr-1 size-4" /> Add expense
           </Button>
         )}
-      </DialogTrigger>
-      <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-lg">
-        <DialogHeader>
-          <DialogTitle>{isEdit ? "Edit expense" : "Add expense"}</DialogTitle>
-        </DialogHeader>
+      </SheetTrigger>
+      <SheetContent className="inset-y-4 right-4 flex h-auto w-[min(410px,calc(100%-32px))] flex-col gap-0 overflow-hidden rounded-3xl border-0 shadow-[0_24px_60px_rgba(15,21,18,0.28)] sm:max-w-none">
+        <SheetHeader className="p-[22px_22px_16px]">
+          <SheetTitle className="text-[21px] font-extrabold tracking-tight">{isEdit ? "Edit expense" : "Add expense"}</SheetTitle>
+        </SheetHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="flex min-h-0 flex-1 flex-col">
+          <div className="flex min-h-0 flex-1 flex-col gap-3.5 overflow-y-auto px-5.5">
             {duplicateWarning ? (
               <Alert variant="destructive">
                 <AlertTriangle className="size-4" />
@@ -404,15 +405,23 @@ export function ExpenseFormDialog({
                 </FormItem>
               )}
             />
+          </div>
 
-            <DialogFooter>
-              <Button type="submit" disabled={form.formState.isSubmitting}>
-                {form.formState.isSubmitting ? "Saving…" : duplicateWarning ? "Save anyway" : isEdit ? "Save changes" : "Add expense"}
-              </Button>
-            </DialogFooter>
+          <div className="flex gap-2.5 border-t border-(--fl-line) p-[16px_22px_20px]">
+            <Button
+              type="submit"
+              disabled={form.formState.isSubmitting}
+              className="flex-1 rounded-full bg-(--fl-green) hover:bg-(--fl-green-dark)"
+            >
+              {form.formState.isSubmitting ? "Saving…" : duplicateWarning ? "Save anyway" : isEdit ? "Save changes" : "Add expense"}
+            </Button>
+            <Button type="button" variant="outline" className="rounded-full" onClick={() => setOpen(false)}>
+              Cancel
+            </Button>
+          </div>
           </form>
         </Form>
-      </DialogContent>
-    </Dialog>
+      </SheetContent>
+    </Sheet>
   );
 }
