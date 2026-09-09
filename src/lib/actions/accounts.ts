@@ -6,13 +6,11 @@ import { requireUserId } from "@/lib/session";
 import { runAction, type ActionResult } from "@/lib/actions/action-result";
 import { accountSchema, transferSchema, type AccountInput, type TransferInput } from "@/lib/validations/accounts";
 import { toMinorUnits } from "@/lib/money";
+import { listAccountsCore } from "@/lib/core/accounts";
 
 export async function listAccounts(includeArchived = false) {
   const userId = await requireUserId();
-  return prisma.financialAccount.findMany({
-    where: { userId, ...(includeArchived ? {} : { isArchived: false }) },
-    orderBy: [{ isArchived: "asc" }, { createdAt: "asc" }],
-  });
+  return listAccountsCore(userId, includeArchived);
 }
 
 export async function createAccount(input: AccountInput): Promise<ActionResult<{ id: string }>> {

@@ -6,14 +6,11 @@ import { requireUserId } from "@/lib/session";
 import { runAction, type ActionResult } from "@/lib/actions/action-result";
 import { preferenceSchema, type PreferenceInput } from "@/lib/validations/preferences";
 import { toMinorUnits } from "@/lib/money";
+import { getPreferenceCore } from "@/lib/core/preferences";
 
 export async function getPreference() {
   const userId = await requireUserId();
-  return prisma.userFinancialPreference.upsert({
-    where: { userId },
-    update: {},
-    create: { userId },
-  });
+  return getPreferenceCore(userId);
 }
 
 export async function updatePreference(input: PreferenceInput): Promise<ActionResult<{ id: string }>> {

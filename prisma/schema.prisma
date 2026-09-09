@@ -54,8 +54,26 @@ model User {
   paymentMethods            PaymentMethod[]
   alertPreferences          AlertPreference[]
   alertInstances            AlertInstance[]
+  mobileRefreshTokens       MobileRefreshToken[]
 
   @@index([email])
+}
+
+// A mobile client's long-lived refresh credential, entirely separate from
+// the web app's NextAuth session cookie/JWT — see src/lib/mobile-auth.ts.
+// Only the SHA-256 hash is stored, never the token itself, so a leaked
+// database can't be used to mint sessions.
+model MobileRefreshToken {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash   String    @unique
+  deviceLabel String?
+  createdAt   DateTime  @default(now())
+  expiresAt   DateTime
+  revokedAt   DateTime?
+
+  @@index([userId])
 }
 
 model UserFinancialPreference {
