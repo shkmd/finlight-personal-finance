@@ -1,0 +1,22 @@
+{
+  "name": "@finlight/core",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Framework-agnostic money/date/finance logic and Zod validation schemas shared between the Finlight web app and mobile app.",
+  "exports": {
+    "./money": "./src/money.ts",
+    "./dates": "./src/dates.ts",
+    "./types": "./src/types.ts",
+    "./finance/emi": "./src/finance/emi.ts",
+    "./finance/payoff": "./src/finance/payoff.ts",
+    "./finance/sip": "./src/finance/sip.ts",
+    "./finance/emergencyFund": "./src/finance/emergencyFund.ts",
+    "./finance/budget": "./src/finance/budget.ts",
+    "./finance/creditCard": "./src/finance/creditCard.ts",
+    "./validations/*": "./src/validations/*.ts"
+  },
+  "dependencies": {
+    "date-fns": "^4.4.0",
+    "zod": "^4.5.4"
+  }
+}
