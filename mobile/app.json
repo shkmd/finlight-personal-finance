@@ -33,6 +33,13 @@
       "expo-asset",
       "expo-font",
       "expo-splash-screen"
-    ]
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "d6590a2f-348a-4861-9b75-0d0950e52be1"
+      }
+    },
+    "owner": "shkmdk"
   }
 }

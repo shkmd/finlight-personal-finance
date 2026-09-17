@@ -21,9 +21,20 @@ function RootNavigator() {
     );
   }
 
+  // Stack.Protected actually enforces the guard against the initial/deep-
+  // linked route, unlike conditionally choosing which <Stack.Screen> to
+  // register — that pattern let (app)/index (which claims the root "/" as
+  // a group index route) render on cold start regardless of auth state,
+  // since Expo Router resolves the initial route from the file system
+  // independently of which screens happen to be conditionally mounted.
   return (
     <Stack screenOptions={{ headerShown: false }}>
-      {user ? <Stack.Screen name="(app)" /> : <Stack.Screen name="login" />}
+      <Stack.Protected guard={!!user}>
+        <Stack.Screen name="(app)" />
+      </Stack.Protected>
+      <Stack.Protected guard={!user}>
+        <Stack.Screen name="login" />
+      </Stack.Protected>
     </Stack>
   );
 }
