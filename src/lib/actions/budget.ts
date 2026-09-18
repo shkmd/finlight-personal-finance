@@ -260,6 +260,17 @@ export interface BudgetVsActualSummary {
 
 export async function getBudgetVsActual(year: number, month: number): Promise<BudgetVsActualSummary | null> {
   const userId = await requireUserId();
+  return getBudgetVsActualCore(userId, year, month);
+}
+
+/**
+ * Takes userId explicitly rather than resolving it via requireUserId() —
+ * shared with the mobile dashboard route (src/lib/core/dashboard.ts) the
+ * same way listAccountsCore/getPreferenceCore are, but left here instead
+ * of core/ since its return type is coupled to getBudgetMonth's inferred
+ * type in this same file.
+ */
+export async function getBudgetVsActualCore(userId: string, year: number, month: number): Promise<BudgetVsActualSummary | null> {
   const budgetMonth = await prisma.budgetMonth.findUnique({
     where: { userId_year_month: { userId, year, month } },
     include: { allocations: { include: { category: true } } },
